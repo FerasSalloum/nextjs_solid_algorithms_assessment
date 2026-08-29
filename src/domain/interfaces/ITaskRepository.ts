@@ -1,3 +1,4 @@
+import { TaskWithAssigneeProject } from "@/src/types/TaskRepository";
 import { Task, TaskStatus, Priority } from "@prisma/client";
 
 export interface ITaskFilterOptions {
@@ -9,7 +10,7 @@ export interface ITaskFilterOptions {
 }
 
 export interface ITaskRepository {
-  findById(id: string): Promise<Task | null>;
+  findById(id: string): Promise<TaskWithAssigneeProject | null>;
   findAll(filters?: ITaskFilterOptions): Promise<Task[]>;
   create(data: {
     title: string;
