@@ -1,5 +1,8 @@
 import { ITaskCommentRepository } from "@/src/domain/interfaces/ITaskCommentRepository";
-import { TaskCommentWithAuthor } from "@/src/types/TaskComment";
+import {
+  TaskCommentWithAuthor,
+  TaskCommentWithTask,
+} from "@/src/types/TaskComment";
 import { TaskComment, Role } from "@prisma/client";
 
 export class TaskCommentService {
@@ -7,6 +10,10 @@ export class TaskCommentService {
 
   async getCommentsByTaskId(taskId: string): Promise<TaskCommentWithAuthor[]> {
     return this.commentRepository.findByTaskId(taskId);
+  }
+
+  async findByAuthorId(authorId: string): Promise<TaskCommentWithTask[]> {
+    return this.commentRepository.findByAuthorId(authorId);
   }
 
   async createComment(data: {
@@ -53,10 +60,7 @@ export class TaskCommentService {
     const comment = await this.commentRepository.findById(commentId);
     if (!comment) throw new Error("التعليق غير موجود");
 
-    if (
-      executorRole === Role.ADMIN ||
-      executorRole === Role.MANAGER
-    ) {
+    if (executorRole === Role.ADMIN || executorRole === Role.MANAGER) {
       await this.commentRepository.delete(commentId);
       return;
     }
