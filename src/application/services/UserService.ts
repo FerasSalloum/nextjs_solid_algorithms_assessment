@@ -1,41 +1,62 @@
-import { IUserRepository } from "@/src/domain/interfaces/IUserRepository";
+import { IUserRepository } from "../../domain/interfaces/IUserRepository";
+import { IHashService } from "../../domain/interfaces/IHashService";
+import { ITokenService } from "../../domain/interfaces/ITokenService";
 import { User, Role } from "@prisma/client";
-import bcrypt from "bcryptjs";
 
 export class UserService {
-  constructor(private userRepository: IUserRepository) {}
+  constructor(
+    private userRepository: IUserRepository,
+    private hashService: IHashService,
+    private tokenService: ITokenService,
+  ) {}
 
   async register(data: {
     name: string;
     email: string;
     passwordRaw: string;
-  }): Promise<User> {
+  }): Promise<{ user: User; token: string }> {
     const existingUser = await this.userRepository.findByEmail(data.email);
     if (existingUser) throw new Error("البريد الإلكتروني مستخدم بالفعل");
 
-    const passwordHash = await bcrypt.hash(data.passwordRaw, 10);
+    const passwordHash = await this.hashService.hash(data.passwordRaw);
 
-    return this.userRepository.create({
+    const user = await this.userRepository.create({
       name: data.name,
       email: data.email,
       passwordHash,
-      //المسؤلية الافتراضية للمستخدم
       role: Role.MEMBER,
     });
+    const token = await this.tokenService.generateToken({
+      userId: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    });
+    return { user, token };
   }
 
-  async login(email: string, passwordRaw: string): Promise<User> {
+  async login(
+    email: string,
+    passwordRaw: string,
+  ): Promise<{ user: User; token: string }> {
     const user = await this.userRepository.findByEmail(email);
     if (!user) throw new Error("كلمة المرور او البريد الالكتروني خطاء");
 
-    const isPasswordValid = await bcrypt.compare(
+    const isPasswordValid = await this.hashService.compare(
       passwordRaw,
       user.passwordHash,
     );
     if (!isPasswordValid)
       throw new Error("كلمة المرور او البريد الالكتروني خطاء");
 
-    return user;
+    const token = await this.tokenService.generateToken({
+      userId: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    });
+
+    return { user, token };
   }
 
   async logout(): Promise<boolean> {
@@ -79,5 +100,9 @@ export class UserService {
     }
 
     throw new Error("دور غير معروف");
+  }
+
+  async getUsersByRole(role: Role): Promise<User[]> {
+    return this.userRepository.findByRole(role);
   }
 }
