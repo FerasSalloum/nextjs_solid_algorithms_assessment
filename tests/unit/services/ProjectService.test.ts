@@ -135,13 +135,13 @@ describe("ProjectService_Unit_Tests", () => {
         mockAdminUser.id,
         Role.ADMIN,
         mockProject.id,
-        { name: "تعديل تعديل من قبل المشرف" },
+        { name: " تعديل من قبل المشرف" },
       );
 
       expect(projectRepository.update).toHaveBeenCalledWith(mockProject.id, {
-        name: "تعديل تعديل من قبل المشرف",
+        name: " تعديل من قبل المشرف",
       });
-      expect(result.name).toBe("تعديل تعديل من قبل المشرف");
+      expect(result.name).toBe("تعديل من قبل المشرف");
     });
 
     it("يسمح للمدير بتعديل مشروع يملكة ", async () => {

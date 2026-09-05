@@ -138,7 +138,7 @@ describe("UserService - Unit Tests", () => {
       expect(tokenService.generateToken).not.toHaveBeenCalled();
     });
   });
-    //   اختبار الدالة الثالثة تحديث بيانات المستخدم 
+  //   اختبار الدالة الثالثة تحديث بيانات المستخدم
   describe("updateUser", () => {
     it("يسمح للمشرف بتحديث بيانات اي مستخدم", async () => {
       vi.mocked(userRepository.update).mockResolvedValue({
@@ -188,7 +188,7 @@ describe("UserService - Unit Tests", () => {
           { name: "تعديل محظور" },
         ),
       ).rejects.toThrow(
-        "صلاحيات غير كافية: لا يحق لك تعديل بيانات مدير آخر أو مشرف ",
+        "صلاحيات غير كافية: لا يحق لك تعديل بيانات مدير آخر أو مسؤول (Admin)",
       );
 
       expect(userRepository.update).not.toHaveBeenCalled();
@@ -230,7 +230,7 @@ describe("UserService - Unit Tests", () => {
     });
   });
 
-//   جلب المستخدمين بحسب الصلاحيات
+  //   جلب المستخدمين بحسب الصلاحيات
   describe("getUsersByRole", () => {
     it("يجب أن يجلب قائمة المستخدمين بحسب الرتبة المطلوبة", async () => {
       const mockManagers = [mockManagerUser];

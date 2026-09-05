@@ -151,7 +151,7 @@ describe("TaskService_UnitTests", () => {
       expect(taskRepository.update).toHaveBeenCalledWith(mockTask.id, {
         title: "عنوان معدل بواسطة مدير",
       });
-      expect(result.title).toBe(" عنوان معدل بواسطة مدير");
+      expect(result.title).toBe("عنوان معدل بواسطة مدير");
     });
 
     it("لا يحق للمدير ان يعدل مهمة لم يكن قد قام بانشائها", async () => {
