@@ -8,6 +8,7 @@ import {
 } from "@/src/types/ActivityLog";
 import { ActivityMetadata } from "@/src/types/ActivityMetadata";
 import { ActivityLog, Role } from "@prisma/client";
+import { NotFoundError, ForbiddenError } from "@/src/domain/errors/AppError";
 
 export class ActivityLogService {
   constructor(private activityLogRepository: IActivityLogRepository) {}
@@ -27,7 +28,9 @@ export class ActivityLogService {
     filters?: IActivityLogFilterOptions,
   ): Promise<ActivityLogWithUser[]> {
     if (executorRole === Role.MEMBER) {
-      throw new Error("صلاحيات غير كافية: لا يحق للأعضاء استعراض سجل الأنشطة");
+      throw new ForbiddenError(
+        "صلاحيات غير كافية: لا يحق للأعضاء استعراض سجل الأنشطة",
+      );
     }
 
     return this.activityLogRepository.findAll(filters);
@@ -36,13 +39,17 @@ export class ActivityLogService {
   async getLogById(
     executorRole: Role,
     id: string,
-  ): Promise<ActivityLogWithUserProjectTask | null> {
+  ): Promise<ActivityLogWithUserProjectTask> {
     if (executorRole === Role.MEMBER) {
-      throw new Error("صلاحيات غير كافية: لا يحق للأعضاء استعراض تفاصيل السجل");
+      throw new ForbiddenError(
+        "صلاحيات غير كافية: لا يحق للأعضاء استعراض تفاصيل السجل",
+      );
     }
 
     const log = await this.activityLogRepository.findById(id);
-    if (!log) throw new Error("سجل النشاط غير موجود");
+    if (!log) {
+      throw new NotFoundError("سجل النشاط غير موجود");
+    }
 
     return log;
   }

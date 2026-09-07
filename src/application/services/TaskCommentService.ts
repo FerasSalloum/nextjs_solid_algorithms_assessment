@@ -4,6 +4,11 @@ import {
   TaskCommentWithTask,
 } from "@/src/types/TaskComment";
 import { TaskComment, Role } from "@prisma/client";
+import {
+  NotFoundError,
+  ForbiddenError,
+  AppError,
+} from "@/src/domain/errors/AppError";
 
 export class TaskCommentService {
   constructor(private commentRepository: ITaskCommentRepository) {}
@@ -22,7 +27,7 @@ export class TaskCommentService {
     content: string;
   }): Promise<TaskComment> {
     if (!data.content || data.content.trim() === "") {
-      throw new Error("محتوى التعليق لا يمكن أن يكون فارغاً");
+      throw new AppError("محتوى التعليق لا يمكن أن يكون فارغاً", 400);
     }
 
     return this.commentRepository.create(data);
@@ -35,10 +40,12 @@ export class TaskCommentService {
     content: string,
   ): Promise<TaskComment> {
     const comment = await this.commentRepository.findById(commentId);
-    if (!comment) throw new Error("التعليق غير موجود");
+    if (!comment) {
+      throw new NotFoundError("التعليق غير موجود");
+    }
 
     if (!content || content.trim() === "") {
-      throw new Error("محتوى التعليق لا يمكن أن يكون فارغاً");
+      throw new AppError("محتوى التعليق لا يمكن أن يكون فارغاً", 400);
     }
 
     if (
@@ -49,7 +56,7 @@ export class TaskCommentService {
       return this.commentRepository.update(commentId, content);
     }
 
-    throw new Error("صلاحيات غير كافية: لا يمكنك تعديل تعليق شخاص آخر");
+    throw new ForbiddenError("صلاحيات غير كافية: لا يمكنك تعديل تعليق شخص آخر");
   }
 
   async deleteComment(
@@ -58,13 +65,19 @@ export class TaskCommentService {
     commentId: string,
   ): Promise<void> {
     const comment = await this.commentRepository.findById(commentId);
-    if (!comment) throw new Error("التعليق غير موجود");
+    if (!comment) {
+      throw new NotFoundError("التعليق غير موجود");
+    }
 
-    if (executorRole === Role.ADMIN || executorRole === Role.MANAGER) {
+    if (
+      executorRole === Role.ADMIN ||
+      executorRole === Role.MANAGER ||
+      comment.authorId === executorId
+    ) {
       await this.commentRepository.delete(commentId);
       return;
     }
 
-    throw new Error("صلاحيات غير كافية: لا يمكنك حذف هذا التعليق");
+    throw new ForbiddenError("صلاحيات غير كافية: لا يمكنك حذف هذا التعليق");
   }
 }

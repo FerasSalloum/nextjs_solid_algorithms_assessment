@@ -2,6 +2,12 @@ import { IUserRepository } from "../../domain/interfaces/IUserRepository";
 import { IHashService } from "../../domain/interfaces/IHashService";
 import { ITokenService } from "../../domain/interfaces/ITokenService";
 import { User, Role } from "@prisma/client";
+import {
+  ConflictError,
+  UnauthorizedError,
+  ForbiddenError,
+  AppError,
+} from "@/src/domain/errors/AppError";
 
 export class UserService {
   constructor(
@@ -16,7 +22,9 @@ export class UserService {
     passwordRaw: string;
   }): Promise<{ user: User; token: string }> {
     const existingUser = await this.userRepository.findByEmail(data.email);
-    if (existingUser) throw new Error("البريد الإلكتروني مستخدم بالفعل");
+    if (existingUser) {
+      throw new ConflictError("البريد الإلكتروني مستخدم بالفعل");
+    }
 
     const passwordHash = await this.hashService.hash(data.passwordRaw);
 
@@ -26,12 +34,14 @@ export class UserService {
       passwordHash,
       role: Role.MEMBER,
     });
+
     const token = await this.tokenService.generateToken({
       userId: user.id,
       email: user.email,
       name: user.name,
       role: user.role,
     });
+
     return { user, token };
   }
 
@@ -40,14 +50,17 @@ export class UserService {
     passwordRaw: string,
   ): Promise<{ user: User; token: string }> {
     const user = await this.userRepository.findByEmail(email);
-    if (!user) throw new Error("كلمة المرور او البريد الالكتروني خطاء");
+    if (!user) {
+      throw new UnauthorizedError("كلمة المرور او البريد الالكتروني خطاء");
+    }
 
     const isPasswordValid = await this.hashService.compare(
       passwordRaw,
       user.passwordHash,
     );
-    if (!isPasswordValid)
-      throw new Error("كلمة المرور او البريد الالكتروني خطاء");
+    if (!isPasswordValid) {
+      throw new UnauthorizedError("كلمة المرور او البريد الالكتروني خطاء");
+    }
 
     const token = await this.tokenService.generateToken({
       userId: user.id,
@@ -76,7 +89,7 @@ export class UserService {
 
     if (executorRole === Role.MANAGER) {
       if (targetUserRole === Role.ADMIN || targetUserRole === Role.MANAGER) {
-        throw new Error(
+        throw new ForbiddenError(
           "صلاحيات غير كافية: لا يحق لك تعديل بيانات مدير آخر أو مسؤول (Admin)",
         );
       }
@@ -89,7 +102,7 @@ export class UserService {
 
     if (executorRole === Role.MEMBER) {
       if (executorId !== targetUserId) {
-        throw new Error(
+        throw new ForbiddenError(
           "صلاحيات غير كافية: لا يمكنك تعديل بيانات مستخدمين آخرين",
         );
       }
@@ -99,7 +112,7 @@ export class UserService {
       return this.userRepository.update(targetUserId, restrictedData);
     }
 
-    throw new Error("دور غير معروف");
+    throw new AppError("دور غير معروف", 400);
   }
 
   async getUsersByRole(role: Role): Promise<User[]> {

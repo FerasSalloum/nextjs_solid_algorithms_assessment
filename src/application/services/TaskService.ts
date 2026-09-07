@@ -4,13 +4,20 @@ import {
 } from "@/src/domain/interfaces/ITaskRepository";
 import { TaskWithAssigneeProjectOwner } from "@/src/types/TaskRepository";
 import { Task, TaskStatus, Priority, Role } from "@prisma/client";
+import {
+  NotFoundError,
+  ForbiddenError,
+  AppError,
+} from "@/src/domain/errors/AppError";
 
 export class TaskService {
   constructor(private taskRepository: ITaskRepository) {}
 
-  async getTaskById(id: string): Promise<TaskWithAssigneeProjectOwner | null> {
+  async getTaskById(id: string): Promise<TaskWithAssigneeProjectOwner> {
     const task = await this.taskRepository.findById(id);
-    if (!task) throw new Error("المهمة غير موجودة");
+    if (!task) {
+      throw new NotFoundError("المهمة غير موجودة");
+    }
     return task;
   }
 
@@ -35,7 +42,7 @@ export class TaskService {
     if (executorRole === Role.ADMIN || executorRole === Role.MANAGER) {
       return this.taskRepository.create(data);
     }
-    throw new Error("صلاحيات غير كافية: لا يمكنك إنشاء المهام");
+    throw new ForbiddenError("صلاحيات غير كافية: لا يمكنك إنشاء المهام");
   }
 
   async updateTask(
@@ -45,7 +52,9 @@ export class TaskService {
     updateData: Partial<Omit<Task, "id" | "createdAt" | "ownerId">>,
   ): Promise<Task> {
     const task = await this.taskRepository.findById(taskId);
-    if (!task) throw new Error("المهمة غير موجودة");
+    if (!task) {
+      throw new NotFoundError("المهمة غير موجودة");
+    }
 
     if (executorRole === Role.ADMIN) {
       return this.taskRepository.update(taskId, updateData);
@@ -53,14 +62,16 @@ export class TaskService {
 
     if (executorRole === Role.MANAGER) {
       if (task.ownerId !== executorId) {
-        throw new Error("صلاحيات غير كافية: لا يمكنك تعديل مهمة لا تملكها");
+        throw new ForbiddenError(
+          "صلاحيات غير كافية: لا يمكنك تعديل مهمة لا تملكها",
+        );
       }
       return this.taskRepository.update(taskId, updateData);
     }
 
     if (executorRole === Role.MEMBER) {
       if (task.assigneeId !== executorId) {
-        throw new Error(
+        throw new ForbiddenError(
           "صلاحيات غير كافية: لا يمكنك تعديل مهمة ليست مسندة إليك",
         );
       }
@@ -68,14 +79,14 @@ export class TaskService {
         ? { status: updateData.status }
         : {};
       if (Object.keys(restrictedData).length === 0) {
-        throw new Error(
+        throw new ForbiddenError(
           "صلاحيات غير كافية: يحق للعضو تعديل حالة المهمة فقط (Status)",
         );
       }
       return this.taskRepository.update(taskId, restrictedData);
     }
 
-    throw new Error("دور غير معروف");
+    throw new AppError("دور غير معروف", 400);
   }
 
   async deleteTask(
@@ -84,7 +95,9 @@ export class TaskService {
     taskId: string,
   ): Promise<void> {
     const task = await this.taskRepository.findById(taskId);
-    if (!task) throw new Error("المهمة غير موجودة");
+    if (!task) {
+      throw new NotFoundError("المهمة غير موجودة");
+    }
 
     if (
       executorRole === Role.ADMIN ||
@@ -94,6 +107,6 @@ export class TaskService {
       return;
     }
 
-    throw new Error("صلاحيات غير كافية: لا يمكنك حذف هذه المهمة");
+    throw new ForbiddenError("صلاحيات غير كافية: لا يمكنك حذف هذه المهمة");
   }
 }
