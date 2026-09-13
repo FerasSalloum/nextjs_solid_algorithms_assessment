@@ -1,4 +1,4 @@
-import { prisma } from "@/src/lib/prisma";
+import { prisma } from "@/src/infrastructure/database/prisma";
 import {
   ITaskRepository,
   ITaskFilterOptions,

@@ -1,10 +1,8 @@
 import { IUserRepository } from "../../domain/interfaces/IUserRepository";
 import { IHashService } from "../../domain/interfaces/IHashService";
-import { ITokenService } from "../../domain/interfaces/ITokenService";
 import { User, Role } from "@prisma/client";
 import {
   ConflictError,
-  UnauthorizedError,
   ForbiddenError,
   AppError,
 } from "@/src/domain/errors/AppError";
@@ -13,14 +11,14 @@ export class UserService {
   constructor(
     private userRepository: IUserRepository,
     private hashService: IHashService,
-    private tokenService: ITokenService,
   ) {}
 
+  // عملية التسجيل أصبحت تنشئ المستخدم وترجع كائن المستخدم فقط بدون توكن
   async register(data: {
     name: string;
     email: string;
     passwordRaw: string;
-  }): Promise<{ user: User; token: string }> {
+  }): Promise<User> {
     const existingUser = await this.userRepository.findByEmail(data.email);
     if (existingUser) {
       throw new ConflictError("البريد الإلكتروني مستخدم بالفعل");
@@ -35,46 +33,9 @@ export class UserService {
       role: Role.MEMBER,
     });
 
-    const token = await this.tokenService.generateToken({
-      userId: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-    });
-
-    return { user, token };
+    return user;
   }
 
-  async login(
-    email: string,
-    passwordRaw: string,
-  ): Promise<{ user: User; token: string }> {
-    const user = await this.userRepository.findByEmail(email);
-    if (!user) {
-      throw new UnauthorizedError("كلمة المرور او البريد الالكتروني خطاء");
-    }
-
-    const isPasswordValid = await this.hashService.compare(
-      passwordRaw,
-      user.passwordHash,
-    );
-    if (!isPasswordValid) {
-      throw new UnauthorizedError("كلمة المرور او البريد الالكتروني خطاء");
-    }
-
-    const token = await this.tokenService.generateToken({
-      userId: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-    });
-
-    return { user, token };
-  }
-
-  async logout(): Promise<boolean> {
-    return true;
-  }
 
   async updateUser(
     executorId: string,

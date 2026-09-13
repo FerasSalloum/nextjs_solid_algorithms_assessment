@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { TaskCommentService } from "../../../src/application/services/TaskCommentService";
 import { ITaskCommentRepository } from "../../../src/domain/interfaces/ITaskCommentRepository";
-import { Role } from "@prisma/client";
+import { Role, User } from "@prisma/client";
 import {
   mockAdminUser,
   mockManagerUser,
@@ -11,6 +11,16 @@ import {
   mockTaskCommentWithAuthor,
   mockTaskCommentWithTask,
 } from "@tests/unit/mocks/mockData";
+
+export const MemberUser: User = {
+  id: "member-123---123--123",
+  email: "member@example.com",
+  name: "عضو الفريق",
+  passwordHash: "$2a$10$e83/fakehash",
+  role: Role.MEMBER,
+  createdAt: new Date("2026-01-01"),
+  updatedAt: new Date("2026-01-01"),
+};
 
 describe("TaskCommentService_Unit_Tests", () => {
   let commentRepository: ITaskCommentRepository;
@@ -179,7 +189,7 @@ describe("TaskCommentService_Unit_Tests", () => {
           mockTaskComment.id,
           "محاولة تعديل"
         )
-      ).rejects.toThrow("صلاحيات غير كافية: لا يمكنك تعديل تعليق شخاص آخر");
+      ).rejects.toThrow("صلاحيات غير كافية: لا يمكنك تعديل تعليق شخص آخر");
 
       expect(commentRepository.update).not.toHaveBeenCalled();
     });
@@ -222,7 +232,7 @@ describe("TaskCommentService_Unit_Tests", () => {
 
       await expect(
         commentService.deleteComment(
-          mockMemberUser.id,
+          MemberUser.id,
           Role.MEMBER,
           mockTaskComment.id
         )

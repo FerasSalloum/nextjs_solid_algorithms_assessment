@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterAll } from "vitest";
-import { prisma } from "@/src/lib/prisma";
+import { prisma } from "@/src/infrastructure/database/prisma";
 import { ProjectRepository } from "@/src/infrastructure/repositories/ProjectRepository";
 import { ProjectStatus } from "@prisma/client";
 import { mockManagerUser } from "@/tests/unit/mocks/mockData";
@@ -63,7 +63,9 @@ describe("ProjectRepository - Real Database Integration Test", () => {
     });
 
     it("يرجع قيمة فارغة إذا كان المشروع غير موجود", async () => {
-      const foundProject = await projectRepository.findById("non-existent-proj-id");
+      const foundProject = await projectRepository.findById(
+        "non-existent-proj-id",
+      );
       expect(foundProject).toBeNull();
     });
   });
@@ -116,7 +118,7 @@ describe("ProjectRepository - Real Database Integration Test", () => {
     });
   });
 
-  // 4. اختبار التحديث 
+  // 4. اختبار التحديث
   describe("update", () => {
     it("يجب أن يكتفي بتحديث الحقول المحددة فقط", async () => {
       const createdProject = await prisma.project.create({
@@ -128,7 +130,7 @@ describe("ProjectRepository - Real Database Integration Test", () => {
       });
 
       expect(updatedProject.name).toBe("اسم المشروع المُعدّل");
-      expect(updatedProject.description).toBe(projectData.description); 
+      expect(updatedProject.description).toBe(projectData.description);
 
       const dbProject = await prisma.project.findUnique({
         where: { id: createdProject.id },
@@ -137,14 +139,20 @@ describe("ProjectRepository - Real Database Integration Test", () => {
     });
   });
 
-  // 5. اختبار الأرشفة 
+  // 5. اختبار الأرشفة
   describe("archive", () => {
     it("تحويل المشروع إلى الارشيف", async () => {
       const createdProject = await prisma.project.create({
-        data: { ...projectData, id: "proj-archive-id", status: ProjectStatus.ACTIVE },
+        data: {
+          ...projectData,
+          id: "proj-archive-id",
+          status: ProjectStatus.ACTIVE,
+        },
       });
 
-      const archivedProject = await projectRepository.archive(createdProject.id);
+      const archivedProject = await projectRepository.archive(
+        createdProject.id,
+      );
 
       expect(archivedProject.status).toBe(ProjectStatus.ARCHIVED);
 
@@ -155,7 +163,7 @@ describe("ProjectRepository - Real Database Integration Test", () => {
     });
   });
 
-  // 6. اختبار الحذف 
+  // 6. اختبار الحذف
   describe("delete", () => {
     it("يحذف المشروع بنجاح", async () => {
       const createdProject = await prisma.project.create({

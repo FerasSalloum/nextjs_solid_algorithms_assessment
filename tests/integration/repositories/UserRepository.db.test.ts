@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterAll } from "vitest";
-import { prisma } from "@/src/lib/prisma";
+import { prisma } from "@/src/infrastructure/database/prisma";
 import { UserRepository } from "@/src/infrastructure/repositories/UserRepository";
 import { mockAdminUser, mockMemberUser } from "@/tests/unit/mocks/mockData";
 import { Role } from "@prisma/client";

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterAll } from "vitest";
-import { prisma } from "@/src/lib/prisma";
+import { prisma } from "@/src/infrastructure/database/prisma";
 import { ActivityLogRepository } from "@/src/infrastructure/repositories/ActivityLogRepository";
 import {
   mockManagerUser,
@@ -31,7 +31,7 @@ describe("ActivityLogRepository_Real_Database_Integration Test", () => {
     await prisma.task.deleteMany();
     await prisma.project.deleteMany();
     await prisma.user.deleteMany();
-    
+
     await Promise.all([
       prisma.user.create({ data: mockManagerUser }),
       prisma.user.create({ data: mockMemberUser }),
@@ -76,7 +76,7 @@ describe("ActivityLogRepository_Real_Database_Integration Test", () => {
     });
   });
 
-  // 2. اختبار البحث بواسطة المعرف مع العلاقات  
+  // 2. اختبار البحث بواسطة المعرف مع العلاقات
 
   describe("findById", () => {
     it(" يجلب النشاط مع التفاصيل ", async () => {
@@ -113,7 +113,7 @@ describe("ActivityLogRepository_Real_Database_Integration Test", () => {
   });
 
   // 3. اختبار الفلاتر
-    describe("findAll", () => {
+  describe("findAll", () => {
     beforeEach(async () => {
       await Promise.all([
         prisma.activityLog.create({
@@ -141,7 +141,7 @@ describe("ActivityLogRepository_Real_Database_Integration Test", () => {
       const logs = await activityLogRepository.findAll();
 
       expect(logs).toHaveLength(2);
-      expect(logs[0].id).toBe("log-2"); 
+      expect(logs[0].id).toBe("log-2");
       expect(logs[1].id).toBe("log-1");
 
       expect(logs[0].user).toBeDefined();
@@ -165,7 +165,7 @@ describe("ActivityLogRepository_Real_Database_Integration Test", () => {
       });
 
       expect(limitedLogs).toHaveLength(1);
-      expect(limitedLogs[0].id).toBe("log-2"); 
+      expect(limitedLogs[0].id).toBe("log-2");
     });
   });
 });

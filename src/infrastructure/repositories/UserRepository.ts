@@ -1,4 +1,4 @@
-import { prisma } from "@/src/lib/prisma";
+import { prisma } from "@/src/infrastructure/database/prisma";
 import { IUserRepository } from "@/src/domain/interfaces/IUserRepository";
 import { User, Role } from "@prisma/client";
 
@@ -10,16 +10,24 @@ export class UserRepository implements IUserRepository {
   async findByEmail(email: string): Promise<User | null> {
     return prisma.user.findUnique({ where: { email } });
   }
-  async findByRole(role:Role): Promise<User[]> {
-      return prisma.user.findMany({
-        where: {role},
-      });
-    }
-  async create(data: { name: string; email: string; passwordHash: string; role?: Role }): Promise<User> {
+  async findByRole(role: Role): Promise<User[]> {
+    return prisma.user.findMany({
+      where: { role },
+    });
+  }
+  async create(data: {
+    name: string;
+    email: string;
+    passwordHash: string;
+    role?: Role;
+  }): Promise<User> {
     return prisma.user.create({ data });
   }
 
-  async update(id: string, data: Partial<Omit<User, "id" | "createdAt">>): Promise<User> {
+  async update(
+    id: string,
+    data: Partial<Omit<User, "id" | "createdAt">>,
+  ): Promise<User> {
     return prisma.user.update({ where: { id }, data });
   }
 

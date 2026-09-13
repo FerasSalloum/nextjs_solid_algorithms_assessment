@@ -1,7 +1,7 @@
 // tests/integration/repositories/TaskRepository.db.test.ts
 
 import { describe, it, expect, beforeEach, afterAll } from "vitest";
-import { prisma } from "@/src/lib/prisma";
+import { prisma } from "@/src/infrastructure/database/prisma";
 import { TaskRepository } from "@/src/infrastructure/repositories/TaskRepository";
 import { TaskStatus, Priority } from "@prisma/client";
 import {

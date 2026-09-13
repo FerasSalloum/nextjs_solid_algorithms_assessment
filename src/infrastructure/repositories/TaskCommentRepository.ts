@@ -1,13 +1,16 @@
-import { prisma } from "@/src/lib/prisma";
+import { prisma } from "@/src/infrastructure/database/prisma";
 import { ITaskCommentRepository } from "@/src/domain/interfaces/ITaskCommentRepository";
 import { TaskComment } from "@prisma/client";
-import { TaskCommentWithAuthor, TaskCommentWithTask } from "@/src/types/TaskComment";
+import {
+  TaskCommentWithAuthor,
+  TaskCommentWithTask,
+} from "@/src/types/TaskComment";
 
 export class TaskCommentRepository implements ITaskCommentRepository {
   async findById(id: string): Promise<TaskCommentWithAuthor | null> {
-    return prisma.taskComment.findUnique({ 
+    return prisma.taskComment.findUnique({
       where: { id },
-      include: { author: true } // من المفيد جلب بيانات الكاتب مع التعليق
+      include: { author: true }, // من المفيد جلب بيانات الكاتب مع التعليق
     });
   }
 
@@ -24,7 +27,7 @@ export class TaskCommentRepository implements ITaskCommentRepository {
       where: { authorId },
       include: { task: true },
       orderBy: { createdAt: "desc" }, // ترتيب من الأحدث للأقدم
-    }); 
+    });
   }
 
   async create(data: {

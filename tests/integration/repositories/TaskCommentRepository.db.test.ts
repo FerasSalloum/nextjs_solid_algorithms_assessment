@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterAll } from "vitest";
-import { prisma } from "@/src/lib/prisma";
+import { prisma } from "@/src/infrastructure/database/prisma";
 import { TaskCommentRepository } from "@/src/infrastructure/repositories/TaskCommentRepository";
 import {
   mockManagerUser,
@@ -36,7 +36,7 @@ describe("TaskCommentRepository - Real Database Integration Test", () => {
     await prisma.$disconnect();
   });
 
-  // 1. اختبار إنشاء تعليق 
+  // 1. اختبار إنشاء تعليق
   describe("create", () => {
     it("يحفظ التعليق بنجاح ", async () => {
       const createdComment = await commentRepository.create(commentInput);
@@ -82,7 +82,7 @@ describe("TaskCommentRepository - Real Database Integration Test", () => {
     });
   });
 
-  // 3. اختبار جلب تعليقات مهمة معينة 
+  // 3. اختبار جلب تعليقات مهمة معينة
   describe("findByTaskId", () => {
     it("يرجع كافة تعليقات المهمة مرتبة مع الكاتب", async () => {
       await Promise.all([
@@ -147,7 +147,7 @@ describe("TaskCommentRepository - Real Database Integration Test", () => {
     });
   });
 
-  // 5. اختبار التحديث 
+  // 5. اختبار التحديث
 
   describe("update", () => {
     it(" يكتفي بتحديث نص التعليق", async () => {

@@ -1,4 +1,4 @@
-import { prisma } from "@/src/lib/prisma";
+import { prisma } from "@/src/infrastructure/database/prisma";
 import {
   IProjectRepository,
   IProjectFilterOptions,
@@ -12,7 +12,7 @@ export class ProjectRepository implements IProjectRepository {
       where: { id },
       include: { owner: true },
     });
-  } 
+  }
 
   async findAll(filters?: IProjectFilterOptions): Promise<Project[]> {
     return prisma.project.findMany({
