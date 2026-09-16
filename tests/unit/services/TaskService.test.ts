@@ -7,7 +7,7 @@ import {
   mockMemberUser,
   mockTask,
   mockTaskWithAssigneeProjectOwner,
-} from "@tests/unit/mocks/mockData";
+} from "@/tests/unit/mocks/mockData";
 import { Role, TaskStatus } from "@prisma/client";
 
 describe("TaskService_UnitTests", () => {

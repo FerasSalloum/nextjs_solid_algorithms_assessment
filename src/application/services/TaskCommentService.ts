@@ -9,6 +9,13 @@ import {
   ForbiddenError,
   AppError,
 } from "@/src/domain/errors/AppError";
+import { eventBus } from "@/src/infrastructure/events/EventBus";
+import {
+  ACTIVITY_EVENTS,
+  CommentCreatedPayload,
+  CommentDeletedPayload,
+  CommentUpdatedPayload,
+} from "@/src/domain/events/ActiviteEvents";
 
 export class TaskCommentService {
   constructor(private commentRepository: ITaskCommentRepository) {}
@@ -29,8 +36,14 @@ export class TaskCommentService {
     if (!data.content || data.content.trim() === "") {
       throw new AppError("محتوى التعليق لا يمكن أن يكون فارغاً", 400);
     }
-
-    return this.commentRepository.create(data);
+    const newTaskComment = await this.commentRepository.create(data);
+    const payload: CommentCreatedPayload = {
+      userId: data.authorId,
+      taskId: data.taskId,
+      commentId: newTaskComment.id,
+    };
+    eventBus.emit(ACTIVITY_EVENTS.COMMENT_CREATED, payload);
+    return newTaskComment;
   }
 
   async updateComment(
@@ -53,7 +66,18 @@ export class TaskCommentService {
       executorRole === Role.MANAGER ||
       comment.authorId === executorId
     ) {
-      return this.commentRepository.update(commentId, content);
+      const newTaskComment = await this.commentRepository.update(
+        commentId,
+        content,
+      );
+      const payload: CommentUpdatedPayload = {
+        userId: executorId,
+        taskId: comment.taskId,
+        commentId: comment.id,
+        oldInfo: comment,
+      };
+      eventBus.emit(ACTIVITY_EVENTS.COMMENT_UPDATED, payload);
+      return newTaskComment;
     }
 
     throw new ForbiddenError("صلاحيات غير كافية: لا يمكنك تعديل تعليق شخص آخر");
@@ -75,6 +99,13 @@ export class TaskCommentService {
       comment.authorId === executorId
     ) {
       await this.commentRepository.delete(commentId);
+      const payload: CommentDeletedPayload = {
+        userId: executorId,
+        taskId: comment.taskId,
+        commentId: comment.id,
+        oldInfo: comment,
+      };
+      eventBus.emit(ACTIVITY_EVENTS.COMMENT_DELETED, payload);
       return;
     }
 

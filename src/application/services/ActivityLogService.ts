@@ -20,7 +20,7 @@ export class ActivityLogService {
     taskId?: string;
     metadata?: ActivityMetadata;
   }): Promise<ActivityLog> {
-    return this.activityLogRepository.create(data);
+    return await this.activityLogRepository.create(data);
   }
 
   async getLogs(
@@ -33,7 +33,7 @@ export class ActivityLogService {
       );
     }
 
-    return this.activityLogRepository.findAll(filters);
+    return await this.activityLogRepository.findAll(filters);
   }
 
   async getLogById(
@@ -53,4 +53,4 @@ export class ActivityLogService {
 
     return log;
   }
-}
+}   

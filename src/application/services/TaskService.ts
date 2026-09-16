@@ -9,6 +9,13 @@ import {
   ForbiddenError,
   AppError,
 } from "@/src/domain/errors/AppError";
+import { eventBus } from "@/src/infrastructure/events/EventBus";
+import {
+  ACTIVITY_EVENTS,
+  TaskCreatedPayload,
+  TaskDeletedPayload,
+  TaskUpdatedPayload,
+} from "@/src/domain/events/ActiviteEvents";
 
 export class TaskService {
   constructor(private taskRepository: ITaskRepository) {}
@@ -40,8 +47,16 @@ export class TaskService {
     },
   ): Promise<Task> {
     if (executorRole === Role.ADMIN || executorRole === Role.MANAGER) {
-      return this.taskRepository.create(data);
+      const newTask = await this.taskRepository.create(data);
+      const payload: TaskCreatedPayload = {
+        userId: data.ownerId,
+        taskId: newTask.id,
+        projectId: newTask.projectId,
+      };
+      eventBus.emit(ACTIVITY_EVENTS.TASK_CREATED, payload);
+      return newTask;
     }
+
     throw new ForbiddenError("صلاحيات غير كافية: لا يمكنك إنشاء المهام");
   }
 
@@ -57,7 +72,15 @@ export class TaskService {
     }
 
     if (executorRole === Role.ADMIN) {
-      return this.taskRepository.update(taskId, updateData);
+      const newTask = await this.taskRepository.update(taskId, updateData);
+      const payload: TaskUpdatedPayload = {
+        userId: executorId,
+        taskId: taskId,
+        projectId: newTask.projectId,
+        oldInfo: task,
+      };
+      eventBus.emit(ACTIVITY_EVENTS.TASK_UPDATED, payload);
+      return newTask;
     }
 
     if (executorRole === Role.MANAGER) {
@@ -66,7 +89,15 @@ export class TaskService {
           "صلاحيات غير كافية: لا يمكنك تعديل مهمة لا تملكها",
         );
       }
-      return this.taskRepository.update(taskId, updateData);
+      const newTask = await this.taskRepository.update(taskId, updateData);
+      const payload: TaskUpdatedPayload = {
+        userId: executorId,
+        taskId: taskId,
+        projectId: newTask.projectId,
+        oldInfo: task,
+      };
+      eventBus.emit(ACTIVITY_EVENTS.TASK_UPDATED, payload);
+      return newTask;
     }
 
     if (executorRole === Role.MEMBER) {
@@ -83,7 +114,15 @@ export class TaskService {
           "صلاحيات غير كافية: يحق للعضو تعديل حالة المهمة فقط (Status)",
         );
       }
-      return this.taskRepository.update(taskId, restrictedData);
+      const newTask = await this.taskRepository.update(taskId, restrictedData);
+      const payload: TaskUpdatedPayload = {
+        userId: executorId,
+        taskId: taskId,
+        projectId: newTask.projectId,
+        oldInfo: task,
+      };
+      eventBus.emit(ACTIVITY_EVENTS.TASK_UPDATED, payload);
+      return newTask;
     }
 
     throw new AppError("دور غير معروف", 400);
@@ -104,6 +143,13 @@ export class TaskService {
       (executorRole === Role.MANAGER && task.ownerId === executorId)
     ) {
       await this.taskRepository.delete(taskId);
+      const payload: TaskDeletedPayload = {
+        userId: executorId,
+        taskId: taskId,
+        projectId: task.projectId,
+        oldInfo:task
+      };
+      eventBus.emit(ACTIVITY_EVENTS.TASK_DELETED, payload);
       return;
     }
 

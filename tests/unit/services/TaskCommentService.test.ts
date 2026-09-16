@@ -10,7 +10,7 @@ import {
   mockTaskComment,
   mockTaskCommentWithAuthor,
   mockTaskCommentWithTask,
-} from "@tests/unit/mocks/mockData";
+} from "@/tests/unit/mocks/mockData";
 
 export const MemberUser: User = {
   id: "member-123---123--123",
@@ -40,7 +40,7 @@ describe("TaskCommentService_Unit_Tests", () => {
     vi.clearAllMocks();
   });
 
-//   اختبار الدالة الاولى جلب التعليق بستخدام معرف المهمة مع معلومات الكاتب
+  //   اختبار الدالة الاولى جلب التعليق بستخدام معرف المهمة مع معلومات الكاتب
   describe("getCommentsByTaskId", () => {
     it("جلب التعليقا ت الخاصة بمهمة محددة مع معلومات الكاتب", async () => {
       vi.mocked(commentRepository.findByTaskId).mockResolvedValue([
@@ -54,7 +54,7 @@ describe("TaskCommentService_Unit_Tests", () => {
     });
   });
 
-//   اختبار الدالة الثانية جلب التعليق بستخدام معرف الكاتب مع معلومات المهمة
+  //   اختبار الدالة الثانية جلب التعليق بستخدام معرف الكاتب مع معلومات المهمة
   describe("getCommentsByAuthorId", () => {
     it("جلب التعليقا ت الخاصة بمستخدم محددة مع معلومات المهمة", async () => {
       vi.mocked(commentRepository.findByAuthorId).mockResolvedValue([
@@ -63,14 +63,15 @@ describe("TaskCommentService_Unit_Tests", () => {
 
       const result = await commentService.findByAuthorId(mockMemberUser.id);
 
-      expect(commentRepository.findByAuthorId).toHaveBeenCalledWith(mockMemberUser.id);
+      expect(commentRepository.findByAuthorId).toHaveBeenCalledWith(
+        mockMemberUser.id,
+      );
       expect(result).toEqual([mockTaskCommentWithTask]);
     });
   });
 
-  
-//   اختبار الدالة الثالثة انشاء تعليق
-  
+  //   اختبار الدالة الثالثة انشاء تعليق
+
   describe("createComment", () => {
     it("انشاء تعليق جديد", async () => {
       const createInput = {
@@ -93,13 +94,13 @@ describe("TaskCommentService_Unit_Tests", () => {
           taskId: mockTask.id,
           authorId: mockMemberUser.id,
           content: "    ",
-        })
+        }),
       ).rejects.toThrow("محتوى التعليق لا يمكن أن يكون فارغاً");
 
       expect(commentRepository.create).not.toHaveBeenCalled();
     });
   });
-//   اختبار الدالة الرابعة التعديل على التعليق 
+  //   اختبار الدالة الرابعة التعديل على التعليق
   describe("updateComment", () => {
     it("خطاء تعليق غير موجود", async () => {
       vi.mocked(commentRepository.findById).mockResolvedValue(null);
@@ -109,8 +110,8 @@ describe("TaskCommentService_Unit_Tests", () => {
           mockAdminUser.id,
           Role.ADMIN,
           "non-existent-id",
-          "محتوى جديد"
-        )
+          "محتوى جديد",
+        ),
       ).rejects.toThrow("التعليق غير موجود");
 
       expect(commentRepository.update).not.toHaveBeenCalled();
@@ -118,7 +119,7 @@ describe("TaskCommentService_Unit_Tests", () => {
 
     it("خطاء نص التعليق فارغ", async () => {
       vi.mocked(commentRepository.findById).mockResolvedValue(
-        mockTaskCommentWithAuthor
+        mockTaskCommentWithAuthor,
       );
 
       await expect(
@@ -126,8 +127,8 @@ describe("TaskCommentService_Unit_Tests", () => {
           mockMemberUser.id,
           Role.MEMBER,
           mockTaskComment.id,
-          "   "
-        )
+          "   ",
+        ),
       ).rejects.toThrow("محتوى التعليق لا يمكن أن يكون فارغاً");
 
       expect(commentRepository.update).not.toHaveBeenCalled();
@@ -137,7 +138,7 @@ describe("TaskCommentService_Unit_Tests", () => {
       const updatedComment = { ...mockTaskComment, content: "تعديل مشرف" };
 
       vi.mocked(commentRepository.findById).mockResolvedValue(
-        mockTaskCommentWithAuthor
+        mockTaskCommentWithAuthor,
       );
       vi.mocked(commentRepository.update).mockResolvedValue(updatedComment);
 
@@ -145,19 +146,19 @@ describe("TaskCommentService_Unit_Tests", () => {
         mockAdminUser.id,
         Role.ADMIN,
         mockTaskComment.id,
-        "تعديل مشرف"
+        "تعديل مشرف",
       );
 
       expect(commentRepository.update).toHaveBeenCalledWith(
         mockTaskComment.id,
-        "تعديل مشرف"
+        "تعديل مشرف",
       );
       expect(result.content).toBe("تعديل مشرف");
     });
 
     it("يسمح للكاتب بتعديل التعليقات الخاصة بة", async () => {
       vi.mocked(commentRepository.findById).mockResolvedValue(
-        mockTaskCommentWithAuthor
+        mockTaskCommentWithAuthor,
       );
       vi.mocked(commentRepository.update).mockResolvedValue({
         ...mockTaskComment,
@@ -165,21 +166,21 @@ describe("TaskCommentService_Unit_Tests", () => {
       });
 
       await commentService.updateComment(
-        mockMemberUser.id, 
+        mockMemberUser.id,
         Role.MEMBER,
         mockTaskComment.id,
-        "تعديل بواسطة الكاتب"
+        "تعديل بواسطة الكاتب",
       );
 
       expect(commentRepository.update).toHaveBeenCalledWith(
         mockTaskComment.id,
-        "تعديل بواسطة الكاتب"
+        "تعديل بواسطة الكاتب",
       );
     });
 
     it("لا يسمح للاعضاء بتغير تعليقات الاعضاء المستخدمين الاخرين", async () => {
       vi.mocked(commentRepository.findById).mockResolvedValue(
-        mockTaskCommentWithAuthor
+        mockTaskCommentWithAuthor,
       );
 
       await expect(
@@ -187,14 +188,14 @@ describe("TaskCommentService_Unit_Tests", () => {
           "other-member-id",
           Role.MEMBER,
           mockTaskComment.id,
-          "محاولة تعديل"
-        )
+          "محاولة تعديل",
+        ),
       ).rejects.toThrow("صلاحيات غير كافية: لا يمكنك تعديل تعليق شخص آخر");
 
       expect(commentRepository.update).not.toHaveBeenCalled();
     });
   });
-// اختبار الدالة الخامسة حذف تعليق
+  // اختبار الدالة الخامسة حذف تعليق
   describe("deleteComment", () => {
     it("يجب أن يرمي خطأ إذا كان التعليق المراد حذفه غير موجود", async () => {
       vi.mocked(commentRepository.findById).mockResolvedValue(null);
@@ -203,8 +204,8 @@ describe("TaskCommentService_Unit_Tests", () => {
         commentService.deleteComment(
           mockAdminUser.id,
           Role.ADMIN,
-          "non-existent-id"
-        )
+          "non-existent-id",
+        ),
       ).rejects.toThrow("التعليق غير موجود");
 
       expect(commentRepository.delete).not.toHaveBeenCalled();
@@ -212,14 +213,14 @@ describe("TaskCommentService_Unit_Tests", () => {
 
     it("يجب أن يسمح للمدير (MANAGER) والمشرف (ADMIN) بحذف التعليق", async () => {
       vi.mocked(commentRepository.findById).mockResolvedValue(
-        mockTaskCommentWithAuthor
+        mockTaskCommentWithAuthor,
       );
       vi.mocked(commentRepository.delete).mockResolvedValue();
 
       await commentService.deleteComment(
         mockManagerUser.id,
         Role.MANAGER,
-        mockTaskComment.id
+        mockTaskComment.id,
       );
 
       expect(commentRepository.delete).toHaveBeenCalledWith(mockTaskComment.id);
@@ -227,15 +228,15 @@ describe("TaskCommentService_Unit_Tests", () => {
 
     it("يجب أن يمنع العضو (MEMBER) من حذف التعليق وفقاً لقواعد المنطق البرمجي", async () => {
       vi.mocked(commentRepository.findById).mockResolvedValue(
-        mockTaskCommentWithAuthor
+        mockTaskCommentWithAuthor,
       );
 
       await expect(
         commentService.deleteComment(
           MemberUser.id,
           Role.MEMBER,
-          mockTaskComment.id
-        )
+          mockTaskComment.id,
+        ),
       ).rejects.toThrow("صلاحيات غير كافية: لا يمكنك حذف هذا التعليق");
 
       expect(commentRepository.delete).not.toHaveBeenCalled();

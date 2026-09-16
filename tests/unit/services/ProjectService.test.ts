@@ -7,7 +7,7 @@ import {
   mockMemberUser,
   mockProject,
   mockProjectWithOwner,
-} from "@tests/unit/mocks/mockData";
+} from "@/tests/unit/mocks/mockData";
 import { Role, ProjectStatus } from "@prisma/client";
 
 describe("ProjectService_Unit_Tests", () => {

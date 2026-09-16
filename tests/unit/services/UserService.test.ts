@@ -5,7 +5,7 @@ import {
   mockAdminUser,
   mockManagerUser,
   mockMemberUser,
-} from "@tests/unit/mocks/mockData";
+} from "@/tests/unit/mocks/mockData";
 import { Role } from "@prisma/client";
 import { IHashService } from "../../../src/domain/interfaces/IHashService";
 
@@ -22,7 +22,7 @@ describe("UserService - Unit Tests", () => {
       compare: vi.fn(),
     };
 
-    userService = new UserService(userRepository, hashService,);
+    userService = new UserService(userRepository, hashService);
 
     vi.clearAllMocks();
   });
@@ -63,7 +63,7 @@ describe("UserService - Unit Tests", () => {
       await expect(
         userService.register({
           name: "مستخدم مكرر",
-          email: mockMemberUser.email, 
+          email: mockMemberUser.email,
           passwordRaw: "Password123!",
         }),
       ).rejects.toThrow("البريد الإلكتروني مستخدم بالفعل");

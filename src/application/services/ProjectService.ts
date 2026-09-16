@@ -5,6 +5,14 @@ import {
 import { ProjectWithOwner } from "@/src/types/ProjectRepository";
 import { Project, ProjectStatus, Role } from "@prisma/client";
 import { NotFoundError, ForbiddenError } from "@/src/domain/errors/AppError";
+import {
+  ACTIVITY_EVENTS,
+  ProjectArchivedPayload,
+  ProjectCreatedPayload,
+  ProjectDeletedPayload,
+  ProjectUpdatedPayload,
+} from "@/src/domain/events/ActiviteEvents";
+import { eventBus } from "@/src/infrastructure/events/EventBus";
 
 export class ProjectService {
   constructor(private projectRepository: IProjectRepository) {}
@@ -35,8 +43,13 @@ export class ProjectService {
         "صلاحيات غير كافية: لا يحق للأعضاء إنشاء مشاريع جديدة",
       );
     }
-
-    return this.projectRepository.create(data);
+    const newProject = await this.projectRepository.create(data);
+    const payload: ProjectCreatedPayload = {
+      userId: newProject.ownerId,
+      projectId: newProject.id,
+    };
+    eventBus.emit(ACTIVITY_EVENTS.PROJECT_CREATED, payload);
+    return newProject;
   }
 
   async updateProject(
@@ -51,7 +64,17 @@ export class ProjectService {
     }
 
     if (executorRole === Role.ADMIN) {
-      return this.projectRepository.update(projectId, updateData);
+      const newProject = await this.projectRepository.update(
+        projectId,
+        updateData,
+      );
+      const payload: ProjectUpdatedPayload = {
+        userId: newProject.ownerId,
+        projectId: newProject.id,
+        oldInfo: project,
+      };
+      eventBus.emit(ACTIVITY_EVENTS.PROJECT_UPDATED, payload);
+      return newProject;
     }
 
     if (executorRole === Role.MANAGER) {
@@ -60,7 +83,17 @@ export class ProjectService {
           "صلاحيات غير كافية: لا يمكنك تعديل مشروع لا تملكه",
         );
       }
-      return this.projectRepository.update(projectId, updateData);
+      const newProject = await this.projectRepository.update(
+        projectId,
+        updateData,
+      );
+      const payload: ProjectUpdatedPayload = {
+        userId: newProject.ownerId,
+        projectId: newProject.id,
+        oldInfo: project,
+      };
+      eventBus.emit(ACTIVITY_EVENTS.PROJECT_UPDATED, payload);
+      return newProject;
     }
 
     throw new ForbiddenError(
@@ -82,9 +115,14 @@ export class ProjectService {
       executorRole === Role.ADMIN ||
       (executorRole === Role.MANAGER && project.ownerId === executorId)
     ) {
-      return this.projectRepository.archive(projectId);
+      const newProject = await this.projectRepository.archive(projectId);
+      const payload: ProjectArchivedPayload = {
+        userId: executorId,
+        projectId: newProject.id,
+      };
+      eventBus.emit(ACTIVITY_EVENTS.PROJECT_ARCHIVED, payload);
+      return newProject;
     }
-
     throw new ForbiddenError("صلاحيات غير كافية: لا يمكنك أرشفة هذا المشروع");
   }
 
@@ -96,6 +134,11 @@ export class ProjectService {
 
     if (executorRole === Role.ADMIN) {
       await this.projectRepository.delete(projectId);
+      const payload: ProjectDeletedPayload = {
+        userId: executorRole,
+        projectId: project.id,
+      };
+      eventBus.emit(ACTIVITY_EVENTS.PROJECT_DELETED, payload);
       return;
     }
 

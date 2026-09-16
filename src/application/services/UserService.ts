@@ -5,7 +5,13 @@ import {
   ConflictError,
   ForbiddenError,
   AppError,
+  NotFoundError,
 } from "@/src/domain/errors/AppError";
+import {
+  ACTIVITY_EVENTS,
+  UserUpdatedPayload,
+} from "@/src/domain/events/ActiviteEvents";
+import { eventBus } from "@/src/infrastructure/events/EventBus";
 
 export class UserService {
   constructor(
@@ -36,7 +42,6 @@ export class UserService {
     return user;
   }
 
-
   async updateUser(
     executorId: string,
     executorRole: Role,
@@ -44,8 +49,22 @@ export class UserService {
     targetUserRole: Role,
     updateData: Partial<Omit<User, "id" | "createdAt">>,
   ): Promise<User> {
+    const user = await this.userRepository.findById(targetUserId);
+    if (!user) {
+      throw new NotFoundError("المستخدم غير موجود");
+    }
     if (executorRole === Role.ADMIN) {
-      return this.userRepository.update(targetUserId, updateData);
+      const newUser = await this.userRepository.update(
+        targetUserId,
+        updateData,
+      );
+      const payload: UserUpdatedPayload = {
+        executorId: executorId,
+        targetUserId: targetUserId,
+        oldInfo: user,
+      };
+      eventBus.emit(ACTIVITY_EVENTS.COMMENT_UPDATED, payload);
+      return newUser;
     }
 
     if (executorRole === Role.MANAGER) {
@@ -58,7 +77,17 @@ export class UserService {
       if (updateData.role) {
         delete updateData.role;
       }
-      return this.userRepository.update(targetUserId, updateData);
+      const newUser = await this.userRepository.update(
+        targetUserId,
+        updateData,
+      );
+      const payload: UserUpdatedPayload = {
+        executorId: executorId,
+        targetUserId: targetUserId,
+        oldInfo: user,
+      };
+      eventBus.emit(ACTIVITY_EVENTS.COMMENT_UPDATED, payload);
+      return newUser;
     }
 
     if (executorRole === Role.MEMBER) {
@@ -70,7 +99,17 @@ export class UserService {
 
       const restrictedData = { name: updateData.name };
 
-      return this.userRepository.update(targetUserId, restrictedData);
+      const newUser = await this.userRepository.update(
+        targetUserId,
+        restrictedData,
+      );
+      const payload: UserUpdatedPayload = {
+        executorId: executorId,
+        targetUserId: targetUserId,
+        oldInfo: user,
+      };
+      eventBus.emit(ACTIVITY_EVENTS.COMMENT_UPDATED, payload);
+      return newUser;
     }
 
     throw new AppError("دور غير معروف", 400);

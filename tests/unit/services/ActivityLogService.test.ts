@@ -7,7 +7,7 @@ import {
   mockAdminUser,
   mockProject,
   mockTask,
-} from "@tests/unit/mocks/mockData";
+} from "@/tests/unit/mocks/mockData";
 
 describe("ActivityLogService_Unit_Tests", () => {
   let activityLogRepository: IActivityLogRepository;
@@ -35,7 +35,7 @@ describe("ActivityLogService_Unit_Tests", () => {
     activityLogService = new ActivityLogService(activityLogRepository);
     vi.clearAllMocks();
   });
-//   اختبار الدالة الاولى تسجيل الحدث
+  //   اختبار الدالة الاولى تسجيل الحدث
   describe("logActivity", () => {
     it("تسجيل الحدث و ارجاعة", async () => {
       const logData = {
@@ -44,8 +44,7 @@ describe("ActivityLogService_Unit_Tests", () => {
         projectId: mockProject.id,
         taskId: mockTask.id,
         metadata: {
-          previousStatus: "TODO",
-          newStatus: "IN_PROGRESS",
+          oldInfo:mockTask
         },
       };
 
@@ -60,9 +59,8 @@ describe("ActivityLogService_Unit_Tests", () => {
     });
   });
 
-  
   // اختبار الدالة الثانية جلب جميع الاحداث
-  
+
   describe("getLogs", () => {
     it("عرض كافة الانشطة للمشرف", async () => {
       vi.mocked(activityLogRepository.findAll).mockResolvedValue([
@@ -95,9 +93,8 @@ describe("ActivityLogService_Unit_Tests", () => {
     });
   });
 
-  
   // 3. اخبار الدالة الثالة جلب حدث بستخدام المعرف
-  
+
   describe("getLogById", () => {
     it("ارجاع الحدث مع المعرف والصلاحيات المناسبة", async () => {
       vi.mocked(activityLogRepository.findById).mockResolvedValue(
