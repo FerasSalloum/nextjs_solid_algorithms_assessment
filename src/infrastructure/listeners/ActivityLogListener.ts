@@ -15,188 +15,140 @@ import {
 } from "@/src/domain/events/ActiviteEvents";
 import { ActivityLogService } from "@/src/application/services/ActivityLogService";
 import { ActivityLogRepository } from "@/src/infrastructure/repositories/ActivityLogRepository";
+import { ActivityLogQueueProcessor } from "../queues/ActivityLogService";
 
 const activityLogService = new ActivityLogService(new ActivityLogRepository());
 
+// 1. إنشاء كائن معالج الطابور
+export const activityQueueProcessor = new ActivityLogQueueProcessor(
+  activityLogService,
+);
+let isListenersRegistered = false;
 export function registerActivityListeners(): void {
-  // 1. أحداث المشاريع
+  // 2. بدء المعالج الآلي في الخلفية (يعمل كل ثانيتين)
+  if (isListenersRegistered) return; // منع التكرار
+  isListenersRegistered = true;
+  activityQueueProcessor.startWorker(2000, 20);
+
+  // 3. توجيه جميع الأحداث إلى الطابور بـ O(1)
   eventBus.on(
     ACTIVITY_EVENTS.PROJECT_CREATED,
-    async (payload: ProjectCreatedPayload) => {
-      try {
-        await activityLogService.logActivity({
-          userId: payload.userId,
-          action: ACTIVITY_EVENTS.PROJECT_CREATED,
-          projectId: payload.projectId,
-        });
-      } catch (error) {
-        console.error("فشل تسجيل حدث PROJECT_CREATED:", error);
-      }
+    (payload: ProjectCreatedPayload) => {
+      activityQueueProcessor.enqueueLog({
+        userId: payload.userId,
+        action: ACTIVITY_EVENTS.PROJECT_CREATED,
+        projectId: payload.projectId,
+      });
     },
   );
 
   eventBus.on(
     ACTIVITY_EVENTS.PROJECT_UPDATED,
-    async (payload: ProjectUpdatedPayload) => {
-      try {
-        await activityLogService.logActivity({
-          userId: payload.userId,
-          action: ACTIVITY_EVENTS.PROJECT_UPDATED,
-          projectId: payload.projectId,
-          metadata: payload.oldInfo ? { oldInfo: payload.oldInfo } : undefined,
-        });
-      } catch (error) {
-        console.error("فشل تسجيل حدث PROJECT_UPDATED:", error);
-      }
+    (payload: ProjectUpdatedPayload) => {
+      activityQueueProcessor.enqueueLog({
+        userId: payload.userId,
+        action: ACTIVITY_EVENTS.PROJECT_UPDATED,
+        projectId: payload.projectId,
+        metadata: payload.oldInfo ? { oldInfo: payload.oldInfo } : undefined,
+      });
     },
   );
 
   eventBus.on(
     ACTIVITY_EVENTS.PROJECT_ARCHIVED,
-    async (payload: ProjectArchivedPayload) => {
-      try {
-        await activityLogService.logActivity({
-          userId: payload.userId,
-          action: ACTIVITY_EVENTS.PROJECT_ARCHIVED,
-          projectId: payload.projectId,
-        });
-      } catch (error) {
-        console.error("فشل تسجيل حدث PROJECT_ARCHIVED:", error);
-      }
+    (payload: ProjectArchivedPayload) => {
+      activityQueueProcessor.enqueueLog({
+        userId: payload.userId,
+        action: ACTIVITY_EVENTS.PROJECT_ARCHIVED,
+        projectId: payload.projectId,
+      });
     },
   );
 
   eventBus.on(
     ACTIVITY_EVENTS.PROJECT_DELETED,
-    async (payload: ProjectDeletedPayload) => {
-      try {
-        await activityLogService.logActivity({
-          userId: payload?.userId,
-          action: ACTIVITY_EVENTS.PROJECT_DELETED,
-          projectId: payload.projectId,
-          metadata: payload.oldInfo ? { oldInfo: payload.oldInfo } : undefined,
-        });
-      } catch (error) {
-        console.error("فشل تسجيل حدث PROJECT_DELETED:", error);
-      }
+    (payload: ProjectDeletedPayload) => {
+      activityQueueProcessor.enqueueLog({
+        userId: payload.userId,
+        action: ACTIVITY_EVENTS.PROJECT_DELETED,
+        projectId: payload.projectId,
+        metadata: payload.oldInfo ? { oldInfo: payload.oldInfo } : undefined,
+      });
     },
   );
 
-  // 2. أحداث المهام
-  eventBus.on(
-    ACTIVITY_EVENTS.TASK_CREATED,
-    async (payload: TaskCreatedPayload) => {
-      try {
-        await activityLogService.logActivity({
-          userId: payload.userId,
-          action: ACTIVITY_EVENTS.TASK_CREATED,
-          projectId: payload.projectId,
-          taskId: payload.taskId,
-        });
-      } catch (error) {
-        console.error("فشل تسجيل حدث TASK_CREATED:", error);
-      }
-    },
-  );
+  eventBus.on(ACTIVITY_EVENTS.TASK_CREATED, (payload: TaskCreatedPayload) => {
+    activityQueueProcessor.enqueueLog({
+      userId: payload.userId,
+      action: ACTIVITY_EVENTS.TASK_CREATED,
+      projectId: payload.projectId,
+      taskId: payload.taskId,
+    });
+  });
 
-  eventBus.on(
-    ACTIVITY_EVENTS.TASK_UPDATED,
-    async (payload: TaskUpdatedPayload) => {
-      try {
-        await activityLogService.logActivity({
-          userId: payload.userId,
-          action: ACTIVITY_EVENTS.TASK_UPDATED,
-          projectId: payload.projectId,
-          taskId: payload.taskId,
-          metadata: payload.oldInfo ? { oldInfo: payload.oldInfo } : undefined,
-        });
-      } catch (error) {
-        console.error("فشل تسجيل حدث TASK_UPDATED:", error);
-      }
-    },
-  );
+  eventBus.on(ACTIVITY_EVENTS.TASK_UPDATED, (payload: TaskUpdatedPayload) => {
+    activityQueueProcessor.enqueueLog({
+      userId: payload.userId,
+      action: ACTIVITY_EVENTS.TASK_UPDATED,
+      projectId: payload.projectId,
+      taskId: payload.taskId,
+      metadata: payload.oldInfo ? { oldInfo: payload.oldInfo } : undefined,
+    });
+  });
 
-  eventBus.on(
-    ACTIVITY_EVENTS.TASK_DELETED,
-    async (payload: TaskDeletedPayload) => {
-      try {
-        await activityLogService.logActivity({
-          userId: payload.userId,
-          action: ACTIVITY_EVENTS.TASK_DELETED,
-          projectId: payload.projectId,
-          taskId: payload.taskId,
-          metadata: payload.oldInfo ? { oldInfo: payload.oldInfo } : undefined,
-        });
-      } catch (error) {
-        console.error("فشل تسجيل حدث TASK_DELETED:", error);
-      }
-    },
-  );
+  eventBus.on(ACTIVITY_EVENTS.TASK_DELETED, (payload: TaskDeletedPayload) => {
+    activityQueueProcessor.enqueueLog({
+      userId: payload.userId,
+      action: ACTIVITY_EVENTS.TASK_DELETED,
+      projectId: payload.projectId,
+      taskId: payload.taskId,
+      metadata: payload.oldInfo ? { oldInfo: payload.oldInfo } : undefined,
+    });
+  });
 
-  // 3. أحداث التعليقات
   eventBus.on(
     ACTIVITY_EVENTS.COMMENT_CREATED,
-    async (payload: CommentCreatedPayload) => {
-      try {
-        await activityLogService.logActivity({
-          userId: payload.userId,
-          action: ACTIVITY_EVENTS.COMMENT_CREATED,
-          taskId: payload.taskId,
-        });
-      } catch (error) {
-        console.error("فشل تسجيل حدث COMMENT_CREATED:", error);
-      }
+    (payload: CommentCreatedPayload) => {
+      activityQueueProcessor.enqueueLog({
+        userId: payload.userId,
+        action: ACTIVITY_EVENTS.COMMENT_CREATED,
+        taskId: payload.taskId,
+      });
     },
   );
 
   eventBus.on(
     ACTIVITY_EVENTS.COMMENT_UPDATED,
-    async (payload: CommentUpdatedPayload) => {
-      try {
-        await activityLogService.logActivity({
-          userId: payload.userId,
-          action: ACTIVITY_EVENTS.COMMENT_UPDATED,
-          taskId: payload.taskId,
-          metadata: payload.oldInfo ? { oldInfo: payload.oldInfo } : undefined,
-        });
-      } catch (error) {
-        console.error("فشل تسجيل حدث COMMENT_UPDATED:", error);
-      }
+    (payload: CommentUpdatedPayload) => {
+      activityQueueProcessor.enqueueLog({
+        userId: payload.userId,
+        action: ACTIVITY_EVENTS.COMMENT_UPDATED,
+        taskId: payload.taskId,
+        metadata: payload.oldInfo ? { oldInfo: payload.oldInfo } : undefined,
+      });
     },
   );
 
   eventBus.on(
     ACTIVITY_EVENTS.COMMENT_DELETED,
-    async (payload: CommentDeletedPayload) => {
-      try {
-        await activityLogService.logActivity({
-          userId: payload.userId,
-          action: ACTIVITY_EVENTS.COMMENT_DELETED,
-          taskId: payload.taskId,
-          metadata: payload.oldInfo ? { oldInfo: payload.oldInfo } : undefined,
-        });
-      } catch (error) {
-        console.error("فشل تسجيل حدث COMMENT_DELETED:", error);
-      }
+    (payload: CommentDeletedPayload) => {
+      activityQueueProcessor.enqueueLog({
+        userId: payload.userId,
+        action: ACTIVITY_EVENTS.COMMENT_DELETED,
+        taskId: payload.taskId,
+        metadata: payload.oldInfo ? { oldInfo: payload.oldInfo } : undefined,
+      });
     },
   );
 
-  // 4. أحداث المستخدمين
-  eventBus.on(
-    ACTIVITY_EVENTS.USER_UPDATED,
-    async (payload: UserUpdatedPayload) => {
-      try {
-        await activityLogService.logActivity({
-          userId: payload.executorId,
-          action: ACTIVITY_EVENTS.USER_UPDATED,
-          metadata: {
-            targetUserId: payload.targetUserId,
-            ...(payload.oldInfo && { oldInfo: payload.oldInfo }),
-          },
-        });
-      } catch (error) {
-        console.error("فشل تسجيل حدث USER_UPDATED:", error);
-      }
-    },
-  );
+  eventBus.on(ACTIVITY_EVENTS.USER_UPDATED, (payload: UserUpdatedPayload) => {
+    activityQueueProcessor.enqueueLog({
+      userId: payload.executorId,
+      action: ACTIVITY_EVENTS.USER_UPDATED,
+      metadata: {
+        targetUserId: payload.targetUserId,
+        ...(payload.oldInfo && { oldInfo: payload.oldInfo }),
+      },
+    });
+  });
 }
