@@ -1,7 +1,7 @@
 import "dotenv/config";
-import { defineConfig } from "prisma/config";
+import { definePrismaConfig } from "prisma/config";
 
-export default defineConfig({
+export default definePrismaConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
@@ -9,6 +9,5 @@ export default defineConfig({
   },
   datasource: {
     url: process.env["DATABASE_URL"],
-    // url: "postgresql://admin:12adminpassword12@127.0.0.1:5433/smart_task_db?schema=public",
   },
 });
