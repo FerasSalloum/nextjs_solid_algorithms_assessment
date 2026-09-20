@@ -5,10 +5,10 @@
   "scripts": {
     "test": "vitest",
     "dev": "next dev",
-    "build": "npx prisma generate && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma skills sync || exit 0"
+    "postinstall": "npx prisma generate"
   },
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"
