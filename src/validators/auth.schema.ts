@@ -10,7 +10,14 @@ export const registerSchema = z.object({
     .regex(/[0-9]/, "يجب أن تحتوي كلمة المرور على رقم واحد على الأقل"),
   role: z.enum(["ADMIN", "MANAGER", "MEMBER"]).optional(),
 });
-
+export const registerFormSchema = registerSchema
+  .extend({
+    confirmPassword: z.string().min(1, "يرجى تأكيد كلمة المرور"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "كلمتا المرور غير متطابقتين",
+    path: ["confirmPassword"],
+  });
 export const loginSchema = z.object({
   email: z.string().email("صيغة البريد الإلكتروني غير صحيحة"),
   password: z
@@ -22,3 +29,4 @@ export const loginSchema = z.object({
 
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
+export type RegisterFormInput = z.infer<typeof registerFormSchema>;
