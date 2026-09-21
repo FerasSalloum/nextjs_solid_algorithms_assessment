@@ -27,7 +27,7 @@ export default function LoginForm() {
     },
   });
 
-  const onSubmit = async (data: LoginInput) => {
+const onSubmit = async (data: LoginInput) => {
     try {
       const result = await signIn("credentials", {
         email: data.email,
@@ -35,12 +35,12 @@ export default function LoginForm() {
         redirect: false,
       });
 
-      if (result?.error) {
-        toast.error("البريد الإلكتروني أو كلمة المرور غير صحيحة");
-      } else {
+      if (result?.ok && !result?.error) {
         toast.success("تم تسجيل الدخول بنجاح! جاري التوجيه...");
         router.push("/");
         router.refresh();
+      } else {
+        toast.error("البريد الإلكتروني أو كلمة المرور غير صحيحة");
       }
     } catch {
       toast.error("حدث خطأ أثناء الاتصال بالخادم، يرجى المحاولة لاحقاً");
