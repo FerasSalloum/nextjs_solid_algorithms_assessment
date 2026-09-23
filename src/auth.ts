@@ -7,7 +7,10 @@ import bcrypt from "bcryptjs";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   // 1. إجبار المكتبة على قراءة المفتاح السري صراحة
-  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
+  secret:
+    process.env.AUTH_SECRET ||
+    process.env.NEXTAUTH_SECRET ||
+    "fallback_secret_key_for_testing_123456789",
   // 2. السماح بطلب الاستضافة من سيرفرات Vercel الخارجية
   trustHost: true,
   adapter: PrismaAdapter(prisma),
