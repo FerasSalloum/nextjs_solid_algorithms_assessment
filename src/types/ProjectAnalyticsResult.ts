@@ -3,6 +3,7 @@ import { TaskStatus, Priority } from "@prisma/client";
 export interface ProjectAnalyticsResult {
   totalTasks: number;
   completedTasks: number;
+  remainingTasks: number;
   pendingTasks: number;
   overdueTasks: number;
   criticalTasks: number;

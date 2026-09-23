@@ -65,9 +65,10 @@ export function calculateProjectAnalytics(
   } else if (overdueRate > 15 || (completionRate < 50 && criticalTasks > 0)) {
     healthScore = "AT_RISK";
   }
-
+  const remainingTasks = (totalTasks - completedTasks);
   return {
     totalTasks,
+    remainingTasks,
     completedTasks,
     pendingTasks,
     overdueTasks,
