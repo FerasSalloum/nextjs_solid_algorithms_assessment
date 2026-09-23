@@ -6,6 +6,10 @@ import { Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  // 1. إجبار المكتبة على قراءة المفتاح السري صراحة
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
+  // 2. السماح بطلب الاستضافة من سيرفرات Vercel الخارجية
+  trustHost: true,
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
   providers: [
