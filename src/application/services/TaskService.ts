@@ -2,7 +2,7 @@ import {
   ITaskRepository,
   ITaskFilterOptions,
 } from "@/src/domain/interfaces/ITaskRepository";
-import { TaskWithAssigneeProjectOwner } from "@/src/types/TaskRepository";
+import { TaskWithAssigneeOwner } from "@/src/types/TaskRepository";
 import { Task, TaskStatus, Priority, Role } from "@prisma/client";
 import {
   NotFoundError,
@@ -20,7 +20,7 @@ import {
 export class TaskService {
   constructor(private taskRepository: ITaskRepository) {}
 
-  async getTaskById(id: string): Promise<TaskWithAssigneeProjectOwner> {
+  async getTaskById(id: string): Promise<TaskWithAssigneeOwner> {
     const task = await this.taskRepository.findById(id);
     if (!task) {
       throw new NotFoundError("المهمة غير موجودة");
@@ -32,6 +32,11 @@ export class TaskService {
     return this.taskRepository.findAll(filters);
   }
 
+  async getTaskWithAssigneeOwner(
+    filters?: ITaskFilterOptions,
+  ): Promise<TaskWithAssigneeOwner[]> {
+    return this.taskRepository.findMany(filters);
+  }
   async createTask(
     executorRole: Role,
     data: {
@@ -147,7 +152,7 @@ export class TaskService {
         userId: executorId,
         taskId: taskId,
         projectId: task.projectId,
-        oldInfo:task
+        oldInfo: task,
       };
       eventBus.emit(ACTIVITY_EVENTS.TASK_DELETED, payload);
       return;

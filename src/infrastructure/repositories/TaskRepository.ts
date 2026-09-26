@@ -4,7 +4,7 @@ import {
   ITaskFilterOptions,
 } from "@/src/domain/interfaces/ITaskRepository";
 import { Task, TaskStatus, Priority } from "@prisma/client";
-import { TaskWithAssigneeProjectOwner } from "@/src/types/TaskRepository";
+import { TaskWithAssigneeOwner, TaskWithAssigneeProjectOwner } from "@/src/types/TaskRepository";
 
 export class TaskRepository implements ITaskRepository {
   async findById(id: string): Promise<TaskWithAssigneeProjectOwner | null> {
@@ -32,7 +32,38 @@ export class TaskRepository implements ITaskRepository {
       orderBy: { createdAt: "desc" },
     });
   }
-
+  async findMany(
+    filters?: ITaskFilterOptions,
+  ): Promise<TaskWithAssigneeOwner[]> {
+    return prisma.task.findMany({
+      where: {
+        ...(filters?.projectId && { projectId: filters.projectId }),
+        ...(filters?.assigneeId && { assigneeId: filters.assigneeId }),
+        ...(filters?.ownerId && { ownerId: filters.ownerId }),
+        ...(filters?.status && { status: filters.status }),
+        ...(filters?.priority && { priority: filters.priority }),
+        ...(filters?.search && {
+          title: { contains: filters.search, mode: "insensitive" },
+        }),
+      },
+      include: {
+        assignee: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        owner: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+  }
   async create(data: {
     title: string;
     description?: string;

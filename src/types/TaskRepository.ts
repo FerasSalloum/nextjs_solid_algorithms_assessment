@@ -4,3 +4,21 @@ import { Prisma } from "@prisma/client";
 export type TaskWithAssigneeProjectOwner = Prisma.TaskGetPayload<{
   include: { assignee: true; project: true; owner: true };
 }>;
+export type TaskWithAssigneeOwner = Prisma.TaskGetPayload<{
+  include: {
+    assignee: {
+      select: {
+        id: true;
+        name: true;
+        email: true;
+      };
+    };
+    owner: {
+      select: {
+        id: true;
+        name: true;
+        email: true;
+      };
+    };
+  };
+}>;

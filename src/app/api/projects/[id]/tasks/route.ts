@@ -5,7 +5,6 @@ import { TaskRepository } from "@/src/infrastructure/repositories/TaskRepository
 import { AppError } from "@/src/domain/errors/AppError";
 import { TaskStatus, Priority, Role } from "@prisma/client";
 
-
 const taskService = new TaskService(new TaskRepository());
 
 interface RouteParams {
@@ -27,7 +26,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       search: searchParams.get("search") || undefined,
     };
 
-    const tasks = await taskService.getTasks(filters);
+    const tasks = await taskService.getTaskWithAssigneeOwner(filters);
 
     return NextResponse.json(tasks, { status: 200 });
   } catch (error: unknown) {
@@ -36,13 +35,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     if (error instanceof AppError) {
       return NextResponse.json(
         { error: error.message },
-        { status: error.statusCode }
+        { status: error.statusCode },
       );
     }
 
     return NextResponse.json(
       { error: "حدث خطأ في الخادم أثناء معالجة الطلب" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -57,7 +56,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     if (!body) {
       return NextResponse.json(
         { error: "جسم الطلب فارغ أو غير صالحة صيغة JSON" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -75,13 +74,14 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           error: "بيانات الإدخال غير صالحة",
           details: validation.error.flatten().fieldErrors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // 4. استخراج بيانات المنفذ من Headers
     const executorId = request.headers.get("user-id") || "";
-    const executorRole = (request.headers.get("user-role") as Role) || Role.MEMBER;
+    const executorRole =
+      (request.headers.get("user-role") as Role) || Role.MEMBER;
 
     // 5. تجهيز البيانات وتنفيذ الخدمة
     const taskData = {
@@ -105,13 +105,13 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     if (error instanceof AppError) {
       return NextResponse.json(
         { error: error.message },
-        { status: error.statusCode }
+        { status: error.statusCode },
       );
     }
 
     return NextResponse.json(
       { error: "حدث خطأ في الخادم أثناء معالجة الطلب" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

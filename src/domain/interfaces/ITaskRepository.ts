@@ -1,4 +1,4 @@
-import { TaskWithAssigneeProjectOwner } from "@/src/types/TaskRepository";
+import { TaskWithAssigneeOwner, TaskWithAssigneeProjectOwner } from "@/src/types/TaskRepository";
 import { Task, TaskStatus, Priority } from "@prisma/client";
 
 export interface ITaskFilterOptions {
@@ -13,6 +13,9 @@ export interface ITaskFilterOptions {
 export interface ITaskRepository {
   findById(id: string): Promise<TaskWithAssigneeProjectOwner | null>;
   findAll(filters?: ITaskFilterOptions): Promise<Task[]>;
+  findMany(
+    filters?: ITaskFilterOptions,
+  ): Promise<TaskWithAssigneeOwner[]>;
   create(data: {
     title: string;
     description?: string;
