@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import { EditProjectModal } from "./UpdateProject";
+
 export interface ProjectData {
   id: string;
   name: string;
@@ -11,7 +14,7 @@ export interface ProjectData {
 interface ProjectInfoCardProps {
   project: ProjectData;
   completionRate: number;
-  onEdit?: () => void;
+  onEdit: () => void;
 }
 
 export function ProjectInfoCard({
@@ -19,12 +22,13 @@ export function ProjectInfoCard({
   completionRate,
   onEdit,
 }: ProjectInfoCardProps) {
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   return (
     <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-gray-100 mb-6 text-right rtl">
       {/* الهيدر العلوي للكارت */}
       <div className="flex items-start justify-between gap-3 mb-3">
         <button
-          onClick={onEdit}
+          onClick={() => setIsEditModalOpen(true)}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors shrink-0"
         >
           <span>✏️</span>
@@ -64,6 +68,15 @@ export function ProjectInfoCard({
           />
         </div>
       </div>
+      <EditProjectModal
+        project={project}
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSuccess={() => {
+          // إعـادة جلب بيانات الصفحة أو تحديث الـ state
+          onEdit();
+        }}
+      />
     </div>
   );
 }

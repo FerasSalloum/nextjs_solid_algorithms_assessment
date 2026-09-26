@@ -123,6 +123,7 @@ export default function ProjectDetailsPage() {
               <ProjectInfoCard
                 project={project}
                 completionRate={calculateCompletionRate()}
+                onEdit={refreshData}
               />
             )}
 
@@ -139,6 +140,7 @@ export default function ProjectDetailsPage() {
                     task={task}
                     projectId={projectId}
                     onTaskUpdated={refreshData}
+                    onViewProject={(taskId) => router.push(`/tasks/${taskId}`)}
                   />
                 ))}
 

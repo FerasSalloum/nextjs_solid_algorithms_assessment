@@ -101,7 +101,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     // استخراج بيانات المنفذ
     const executorRole =
-      (request.headers.get("user-role") as Role) || Role.MEMBER;
+      (request.headers.get("user-role")?.toUpperCase() as Role) || Role.MEMBER;
 
     // تنفيذ الحذف عبر الخدمة
     await projectService.deleteProject(executorRole, id);
