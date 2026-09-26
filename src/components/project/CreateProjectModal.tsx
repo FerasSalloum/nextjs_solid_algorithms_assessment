@@ -58,17 +58,17 @@ export function CreateProjectModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 rtl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 rtl ">
       <div className="bg-white w-full max-w-lg rounded-2xl p-6 shadow-xl relative">
         <button
           onClick={onClose}
-          className="absolute top-4 left-4 text-gray-400 hover:text-gray-600 text-xl font-bold"
+          className="absolute top-4 left-4 text-gray-400 hover:text-gray-600 text-xl font-bold cursor-pointer"
         >
           &times;
         </button>
 
-        <div className="flex items-start gap-3 mb-6">
-          <div className="p-3 bg-gray-100 rounded-xl text-xl">📁</div>
+        <div className="flex items-start gap-3 mb-6 flex-row-reverse ">
+          <div className="p-3 bg-gray-100 rounded-xl text-xl ">📁</div>
           <div>
             <h3 className="text-lg font-bold text-gray-900">
               إنشاء مشروع جديد
@@ -95,7 +95,7 @@ export function CreateProjectModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="مثال: بوابة الخدمات الرقمية للمؤسسة"
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-black"
             />
           </div>
 
@@ -108,7 +108,7 @@ export function CreateProjectModal({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="اكتب وصفاً موجزاً يحدد الأهداف العامة، الفئات المستهدفة، والمخرجات المتوقعة..."
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none"
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none text-black"
             />
           </div>
 
@@ -124,7 +124,7 @@ export function CreateProjectModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-3 text-sm font-semibold text-gray-600 hover:text-gray-800 transition-colors"
+              className="px-5 py-3 text-sm font-semibold text-gray-600 hover:text-gray-800 transition-colors cursor-pointer"
             >
               إلغاء الأمر
             </button>

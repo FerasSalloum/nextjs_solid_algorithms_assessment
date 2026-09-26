@@ -4,7 +4,10 @@ import {
   IProjectFilterOptions,
 } from "@/src/domain/interfaces/IProjectRepository";
 import { Project, ProjectStatus } from "@prisma/client";
-import { ProjectWithOwner } from "@/src/types/ProjectRepository";
+import {
+  ProjectWithOwner,
+  ProjectWithOwnerTask,
+} from "@/src/types/ProjectRepository";
 
 export class ProjectRepository implements IProjectRepository {
   async findById(id: string): Promise<ProjectWithOwner | null> {
@@ -29,7 +32,32 @@ export class ProjectRepository implements IProjectRepository {
       orderBy: { createdAt: "desc" },
     });
   }
-
+  async findMany(
+    filters?: IProjectFilterOptions,
+  ): Promise<ProjectWithOwnerTask[]> {
+    return prisma.project.findMany({
+      where: {
+        ...(filters?.status && { status: filters.status }),
+        ...(filters?.ownerId && { ownerId: filters.ownerId }),
+        ...(filters?.search && {
+          OR: [
+            { name: { contains: filters.search, mode: "insensitive" } },
+            { description: { contains: filters.search, mode: "insensitive" } },
+          ],
+        }),
+      },
+      include: {
+    owner: {
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+    },
+    tasks:true,
+  }
+    });
+  }
   async create(data: {
     name: string;
     description?: string;

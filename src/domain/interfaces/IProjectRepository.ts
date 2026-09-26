@@ -1,4 +1,7 @@
-import { ProjectWithOwner } from "@/src/types/ProjectRepository";
+import {
+  ProjectWithOwner,
+  ProjectWithOwnerTask,
+} from "@/src/types/ProjectRepository";
 import { Project, ProjectStatus } from "@prisma/client";
 
 export interface IProjectFilterOptions {
@@ -10,8 +13,17 @@ export interface IProjectFilterOptions {
 export interface IProjectRepository {
   findById(id: string): Promise<ProjectWithOwner | null>;
   findAll(filters?: IProjectFilterOptions): Promise<Project[]>;
-  create(data: { name: string; description?: string; ownerId: string; status?: ProjectStatus }): Promise<Project>;
-  update(id: string, data: Partial<Omit<Project, "id" | "createdAt">>): Promise<Project>;
+  findMany(filters?: IProjectFilterOptions): Promise<ProjectWithOwnerTask[]>;
+  create(data: {
+    name: string;
+    description?: string;
+    ownerId: string;
+    status?: ProjectStatus;
+  }): Promise<Project>;
+  update(
+    id: string,
+    data: Partial<Omit<Project, "id" | "createdAt">>,
+  ): Promise<Project>;
   archive(id: string): Promise<Project>;
   delete(id: string): Promise<void>;
-} 
+}

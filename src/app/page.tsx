@@ -1,133 +1,139 @@
-// src/app/page.tsx
 "use client";
 
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { UserProfileHeader } from "@/src/components/ui/UserProfileHeader";
-import { ProjectCard, ProjectData } from "@/src/components/project/ProjectCard";
+import {
+  ProjectCard,
+} from "@/src/components/project/ProjectCard";
 import { CreateProjectModal } from "@/src/components/project/CreateProjectModal";
+import { useRouter } from "next/navigation";
+import { ProjectWithOwnerTask } from "../types/ProjectRepository";
 
 export default function HomePage() {
-  const [projects, setProjects] = useState<ProjectData[]>([]);
+  const [projects, setProjects] = useState<ProjectWithOwnerTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // جلب كافة المشاريع عبر الـ API المخصص بدون أي فلتر
-  const fetchProjects = async () => {
+  const router = useRouter();
+  // 1. دالة إعادة جلب المشاريع
+  const refreshProjects = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/projects");
-      if (res.ok) {
-        const data = await res.json();
-        setProjects(data);
-      }
-    } catch (err) {
-      console.error("خطأ أثناء جلب المشاريع:", err);
+      const response = await axios.get("/api/projects");
+      setProjects(response.data);
+    } catch (error) {
+      console.error("خطأ أثناء جلب المشاريع:", error);
     } finally {
       setLoading(false);
     }
   };
 
+  // 2. جلب البيانات عند تحميل المكون لأول مرة
   useEffect(() => {
-    fetchProjects();
+    let isMounted = true;
+
+    const loadInitialData = async () => {
+      try {
+        const response = await axios.get("/api/projects");
+        if (isMounted) {
+          setProjects(response.data);
+        }
+      } catch (error) {
+        if (isMounted) {
+          console.error("خطأ أثناء جلب المشاريع:", error);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadInitialData();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  // تصفية المشاريع محلياً حسب خانة البحث
+  // الفلترة المحلية بالبحث
   const filteredProjects = projects.filter((p) =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
-    <div className="min-h-screen bg-gray-50/50 pb-20 rtl text-right">
-      {/* الشريط العلوي */}
-      <header className="bg-white border-b border-gray-100 py-3 px-4 flex justify-between items-center sticky top-0 z-10">
-        <div className="text-xs text-gray-500">
-          مدير المشاريع /{" "}
-          <span className="font-semibold text-gray-800">Home</span>
-        </div>
-        <div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center font-bold text-sm">
-          👤
-        </div>
-      </header>
+    /* خلفية متدرجة بزرقة خفيفة وأنيقة مع دعم كافة الشاشات */
+    <div className="min-h-screen bg-linear-to-b from-blue-50/50 via-slate-50 to-blue-50/30 pb-20 rtl text-right">
+      {/* الحاوية الرئيسية بحد أقصى مرن يتكيف من الهواتف حتى شاشات العرض الكبيرة */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* معلومات المستخدم من الجلسة */}
+        <UserProfileHeader />
 
-      <main className="max-w-md mx-auto p-4">
-        {/* 1. كمبوننت معلومات المستخدم من الجلسة */}
-        <UserProfileHeader activeProjectsCount={projects.length} />
-
-        {/* 2. شريط البحث والتصفية */}
-        <div className="flex items-center gap-2 mb-6">
-          <div className="relative flex-1">
+        {/* شريط البحث */}
+        <div className="flex items-center gap-2 mb-6 sm:mb-8">
+          <div className="relative flex-1 max-w-2xl mx-auto">
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="البحث في سجل المشاريع..."
-              className="w-full pl-4 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-sm transition-all"
+              className="w-full pl-4 pr-10 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-sm transition-all"
             />
-            <span className="absolute right-3 top-3 text-gray-400 text-sm">
+            <span className="absolute right-3 top-3.5 text-gray-400 text-sm">
               🔍
             </span>
           </div>
-          <button className="p-2.5 bg-white border border-gray-200 rounded-xl shadow-sm text-gray-600 hover:bg-gray-50">
-            ⚙️
-          </button>
         </div>
 
-        {/* 3. قائمة المشاريع الحالية */}
-        <div className="mb-4">
-          <h3 className="text-base font-bold text-gray-900 mb-3">
+        {/* قسم المشاريع الحالية */}
+        <div className="mb-8">
+          <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">
             المشاريع الحالية
           </h3>
 
           {loading ? (
-            <div className="text-center py-8 text-xs text-gray-500">
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-12 text-center text-sm font-semibold text-gray-700 shadow-sm border border-blue-50/50">
               جاري تحميل المشاريع...
             </div>
           ) : filteredProjects.length === 0 ? (
-            <div className="text-center py-8 text-xs text-gray-500">
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-12 text-center text-sm font-semibold text-gray-700 shadow-sm border border-blue-50/50">
               لا توجد مشاريع حالية
             </div>
           ) : (
-            filteredProjects.map((project) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                onViewProject={(id) => alert(`استعراض المشروع رقم: ${id}`)}
-              />
-            ))
+            /* عرض المشاريع على شكل شبكة متجاوبة (1 عمود للموبايل، 2 للتابلت، 3 للشاشات الكبيرة) */
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filteredProjects.map((project) => (
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  onViewProject={(id) => router.push(`/projects/${id}`)}
+                />
+              ))}
+            </div>
           )}
         </div>
 
-        {/* 4. بطاقة إضافة مشروع جديد (Trigger Card) */}
+        {/* زر إظهار النافذة المنبثقة لإضافة مشروع */}
         <button
           onClick={() => setIsModalOpen(true)}
-          className="w-full bg-white border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center hover:border-blue-400 hover:bg-blue-50/30 transition-all group"
+          className="w-full bg-white border-2 border-dashed border-blue-200 hover:border-blue-500 rounded-2xl p-6 sm:p-8 text-center hover:bg-blue-50/40 transition-all group shadow-sm cursor-pointer"
         >
-          <div className="w-10 h-10 bg-blue-50 rounded-xl text-blue-600 flex items-center justify-center mx-auto mb-2 text-xl font-bold group-hover:scale-110 transition-transform">
+          <div className="w-12 h-12 bg-blue-100/70 rounded-2xl text-blue-600 flex items-center justify-center mx-auto mb-3 text-2xl font-bold group-hover:scale-110 transition-transform">
             +
           </div>
-          <p className="text-sm font-bold text-gray-900">إضافة مشروع جديد</p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-base font-bold text-gray-900">إضافة مشروع جديد</p>
+          <p className="text-xs sm:text-sm font-medium text-gray-600 mt-1">
             انقر لتحديد اسم ونطاق المشروع وتعيين تفاصيل العمل
           </p>
         </button>
       </main>
 
-      {/* 5. التذييل (Footer) */}
-      <footer className="text-center py-6 text-xs text-gray-400 space-y-2">
-        <p className="font-semibold text-gray-700">مدير المشاريع</p>
-        <div className="flex justify-center gap-3">
-          <span>الصفحة الرئيسية</span> • <span>الصفحة الشخصية</span> •{" "}
-          <span>صفحة الأحداث</span>
-        </div>
-        <p>جميع الحقوق محفوظة © 2026</p>
-      </footer>
-
-      {/* 6. الكمبوننت الخاص بحوار إضافة مشروع جديد */}
+      {/* النافذة المنبثقة */}
       <CreateProjectModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSuccess={fetchProjects}
+        onSuccess={refreshProjects}
       />
     </div>
   );

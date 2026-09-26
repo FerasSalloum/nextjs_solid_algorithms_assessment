@@ -28,6 +28,9 @@ export class ProjectService {
   async getProjects(filters?: IProjectFilterOptions): Promise<Project[]> {
     return this.projectRepository.findAll(filters);
   }
+  async getProjectWithOwnerTask(filters?: IProjectFilterOptions): Promise<Project[]> {
+    return this.projectRepository.findMany(filters);
+  }
 
   async createProject(
     executorRole: Role,

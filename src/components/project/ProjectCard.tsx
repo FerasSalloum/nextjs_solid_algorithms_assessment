@@ -1,19 +1,12 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Task } from "@prisma/client";
 import { Button } from "@/src/components/ui/Button";
 import { calculateProjectAnalytics } from "@/src/algorithms/projectAnalyticsCalculator";
-
-export interface ProjectFullData {
-  id: string;
-  name: string;
-  owner?: { name: string | null };
-  tasks?: Task[];
-}
+import { ProjectWithOwnerTask } from "@/src/types/ProjectRepository";
 
 interface ProjectCardProps {
-  project: ProjectFullData;
+  project: ProjectWithOwnerTask;
   onViewProject?: (id: string) => void;
 }
 

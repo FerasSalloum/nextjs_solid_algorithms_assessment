@@ -5,7 +5,6 @@ import { ProjectRepository } from "@/src/infrastructure/repositories/ProjectRepo
 import { AppError } from "@/src/domain/errors/AppError";
 import { ProjectStatus, Role } from "@prisma/client";
 
-
 const projectService = new ProjectService(new ProjectRepository());
 
 // GET: جلب قائمة المشاريع مع دعم الفلاتر
@@ -19,7 +18,7 @@ export async function GET(request: NextRequest) {
       search: searchParams.get("search") || undefined,
     };
 
-    const projects = await projectService.getProjects(filters);
+    const projects = await projectService.getProjectWithOwnerTask(filters);
 
     return NextResponse.json(projects, { status: 200 });
   } catch (error: unknown) {
