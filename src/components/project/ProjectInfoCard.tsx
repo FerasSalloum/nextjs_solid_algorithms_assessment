@@ -32,7 +32,7 @@ export function ProjectInfoCard({
         </button>
 
         <span className="px-3 py-1 text-xs font-bold text-blue-600 bg-blue-50 rounded-full">
-          المشروع الاستراتيجي
+          {project.status}
         </span>
       </div>
 

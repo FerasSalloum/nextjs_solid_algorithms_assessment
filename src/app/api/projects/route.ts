@@ -9,7 +9,7 @@ const projectService = new ProjectService(new ProjectRepository());
 
 // GET: جلب قائمة المشاريع مع دعم الفلاتر
 export async function GET(request: NextRequest) {
-  try {
+  try { 
     const { searchParams } = new URL(request.url);
 
     const filters = {

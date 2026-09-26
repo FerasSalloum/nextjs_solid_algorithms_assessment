@@ -63,7 +63,7 @@ export class TaskService {
     }
 
     throw new ForbiddenError("صلاحيات غير كافية: لا يمكنك إنشاء المهام");
-  }
+  } 
 
   async updateTask(
     executorId: string,

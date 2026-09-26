@@ -13,6 +13,7 @@ interface CreateProjectModalProps {
   onClose: () => void;
   onSuccess: () => void;
 }
+const STATUS_OPTIONS = ["PLANNING", "ACTIVE", "COMPLETED"];
 
 export function CreateProjectModal({
   isOpen,
@@ -23,6 +24,7 @@ export function CreateProjectModal({
   const [description, setDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [status, setStatus] = useState("PLANNING");
 
   if (!isOpen) return null;
 
@@ -38,7 +40,7 @@ export function CreateProjectModal({
 
     try {
       // إرسال الطلب بواسطة Axios
-      await axios.post("/api/projects", { name, description });
+      await axios.post("/api/projects", { name, description, status });
 
       setName("");
       setDescription("");
@@ -111,7 +113,32 @@ export function CreateProjectModal({
               className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none text-black"
             />
           </div>
-
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-2">
+              حالة المهمة (Status)
+            </label>
+            <div className="grid grid-cols-5 gap-2">
+              {STATUS_OPTIONS.map((opt) => {
+                const isSelected = status === opt;
+                return (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => setStatus(opt)}
+                    className={`py-2 px-2 text-xs font-bold rounded-xl border flex items-center justify-center gap-1.5 transition-all ${
+                      isSelected
+                        ? "bg-gray-900 text-white border-gray-900 shadow-xs w-full"
+                        : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                    }`}
+                  >
+                    <span className="text-[10px] opacity-60 uppercase">
+                      {opt}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
           <div className="flex items-center gap-3 pt-2">
             <Button
               type="submit"
