@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
+import { SessionProvider } from "next-auth/react";
+import { Header } from "../components/ui/Header";
+import { Footer } from "../components/ui/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,6 +35,8 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <SessionProvider>
+          <Header />
         {children}
         <Toaster 
           position="top-right" 
@@ -39,6 +44,8 @@ export default function RootLayout({
           closeButton 
           dir="rtl"
         />
+        <Footer/>
+        </SessionProvider>  
       </body>
     </html>
   );
