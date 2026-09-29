@@ -51,8 +51,7 @@ export async function POST(request: Request, { params }: RouteParams) {
 
     const url = new URL(request.url);
     const executorId =
-      request.headers.get("x-user-id") ||
-      body.userId ||
+      request.headers.get("user-id") ||
       url.searchParams.get("executorId") ||
       "";
 
@@ -85,6 +84,7 @@ export async function POST(request: Request, { params }: RouteParams) {
     return NextResponse.json(
       { error: "حدث خطأ في الخادم أثناء معالجة الطلب" },
       { status: 500 },
+      
     );
   }
 }
