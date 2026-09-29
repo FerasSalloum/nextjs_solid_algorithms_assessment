@@ -11,6 +11,7 @@ import {
 import { TaskCard } from "@/src/components/task/TaskCard";
 import { CreateTaskModal } from "@/src/components/task/CreateTaskModal";
 import { TaskWithAssigneeProjectOwner } from "@/src/types/TaskRepository";
+import { calculateProjectAnalytics } from "@/src/algorithms/projectAnalyticsCalculator";
 
 export default function ProjectDetailsPage() {
   const params = useParams();
@@ -21,6 +22,7 @@ export default function ProjectDetailsPage() {
   const [tasks, setTasks] = useState<TaskWithAssigneeProjectOwner[]>([]);
   const [loading, setLoading] = useState(true); // يبدأ بـ true افتراضياً
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [analytics, setAnalytics] = useState<number>(0);
 
   // 1. دالة إعادة التحديث (تُستخدم يدوياً عند التعديل أو إضافة مهمة)
   const refreshData = useCallback(async () => {
@@ -29,13 +31,14 @@ export default function ProjectDetailsPage() {
     try {
       const tasksRes = await axios.get(`/api/projects/${projectId}/tasks`);
       setTasks(tasksRes.data);
-
+      const result = calculateProjectAnalytics(
+        tasksRes.data || [],
+      ).completionRate;
+      setAnalytics(result);
       try {
         const projectRes = await axios.get(`/api/projects/${projectId}`);
         setProject(projectRes.data);
-      } catch {
-        // البيانات الاحتياطية في حال تعذر جلب المشروع
-      }
+      } catch {}
     } catch (err: unknown) {
       console.error("خطأ أثناء تحديث البيانات:", err);
     } finally {
@@ -54,6 +57,10 @@ export default function ProjectDetailsPage() {
         const tasksRes = await axios.get(`/api/projects/${projectId}/tasks`);
         if (isMounted) {
           setTasks(tasksRes.data);
+          const result = calculateProjectAnalytics(
+            tasksRes.data || [],
+          ).completionRate;
+          setAnalytics(result);
         }
 
         try {
@@ -92,14 +99,9 @@ export default function ProjectDetailsPage() {
   }, [projectId]);
 
   // حساب نسبة التقدم الكلية
-  const calculateCompletionRate = () => {
-    if (tasks.length === 0) return 0;
-    const completedTasks = tasks.filter((t) => t.status === "CANCELLED").length;
-    return Math.round((completedTasks / tasks.length) * 100);
-  };
 
   return (
-    <div className="min-h-screen bg-slate-50/60 pb-20 rtl text-right">
+    <div className="min-h-screen bg-linear-to-b from-blue-50/50 via-slate-50 to-blue-50/30 pb-20 rtl text-right">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* العودة وشريط هيدر التفاصيل */}
         <div className="flex items-center justify-between mb-6">
@@ -122,7 +124,7 @@ export default function ProjectDetailsPage() {
             {project && (
               <ProjectInfoCard
                 project={project}
-                completionRate={calculateCompletionRate()}
+                completionRate={analytics}
                 onEdit={refreshData}
               />
             )}

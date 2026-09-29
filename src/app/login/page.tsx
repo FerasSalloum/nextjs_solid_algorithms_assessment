@@ -12,7 +12,7 @@ export default function LoginPage() {
   return (
     <div
       dir="rtl"
-      className="min-h-screen bg-[#F8FAFC] flex flex-col justify-between items-center py-12 px-4 sm:px-6 lg:px-8 font-sans text-[#0F172A]"
+      className="min-h-screen bg-linear-to-b from-blue-50/50 via-slate-50 to-blue-50/30 flex flex-col justify-between items-center py-12 px-4 sm:px-6 lg:px-8 font-sans text-[#0F172A]"
     >
       {/* 1. الشعار العلوي */}
       <div className="flex items-center gap-3 mt-4 mb-10">

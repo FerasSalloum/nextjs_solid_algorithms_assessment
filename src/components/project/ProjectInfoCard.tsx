@@ -23,6 +23,7 @@ export function ProjectInfoCard({
   onEdit,
 }: ProjectInfoCardProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
   return (
     <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-gray-100 mb-6 text-right rtl">
       {/* الهيدر العلوي للكارت */}
@@ -64,7 +65,7 @@ export function ProjectInfoCard({
         <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden dir-ltr">
           <div
             className="bg-blue-600 h-2.5 rounded-full transition-all duration-500 ease-out"
-            style={{ width: `${Math.min(100, Math.max(0, completionRate))}%` }}
+            style={{ width: `${completionRate}%` }}
           />
         </div>
       </div>

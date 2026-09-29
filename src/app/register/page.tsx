@@ -12,7 +12,7 @@ export default function RegisterPage() {
   return (
     <div
       dir="rtl"
-      className="min-h-screen bg-[#F8FAFC] flex flex-col justify-between items-center py-12 px-4 sm:px-6 lg:px-8 font-sans text-[#0F172A]"
+      className="min-h-screenbg-linear-to-b from-blue-50/50 via-slate-50 to-blue-50/30flex flex-col justify-between items-center py-12 px-4 sm:px-6 lg:px-8 font-sans text-[#0F172A]"
     >
       {/* الشعار العلوي (تمت إزالة بادجة "مؤسسي") */}
       <div className="flex items-center gap-3 mt-4 mb-10">
