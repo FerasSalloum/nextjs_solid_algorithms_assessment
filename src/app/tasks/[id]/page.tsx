@@ -60,7 +60,7 @@ export default function TaskDetailsPage() {
   useEffect(() => {
     if (!taskId) return;
 
-    let isMounted = true; 
+    let isMounted = true;
 
     const fetchPageData = async () => {
       try {
@@ -175,7 +175,11 @@ export default function TaskDetailsPage() {
         {/* قائمة التعليقات في حاوية تمرير مستقلة */}
         <div className="max-h-120 overflow-y-auto space-y-4 p-4 focus:outline-none">
           {comments.map((comment) => (
-            <Listcoments key={comment.id} comment={comment} />
+            <Listcoments
+              key={comment.id}
+              comment={comment}
+              onCommentUpdated={() => setRefreshKey((prev) => prev + 1)}
+            />
           ))}
         </div>
 

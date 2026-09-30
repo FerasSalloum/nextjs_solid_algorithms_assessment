@@ -18,13 +18,13 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     const url = new URL(request.url);
     const executorId =
-      request.headers.get("x-user-id") ||
+      request.headers.get("user-id") ||
       body.userId ||
       url.searchParams.get("executorId") ||
       "";
 
     const executorRole =
-      (request.headers.get("x-user-role") as Role) ||
+      (request.headers.get("user-role") as Role) ||
       (body.role as Role) ||
       (url.searchParams.get("executorRole") as Role) ||
       Role.MEMBER;
@@ -71,12 +71,12 @@ export async function DELETE(request: Request, { params }: RouteParams) {
 
     const url = new URL(request.url);
     const executorId =
-      request.headers.get("x-user-id") ||
+      request.headers.get("user-id") ||
       url.searchParams.get("executorId") ||
       "";
 
     const executorRole =
-      (request.headers.get("x-user-role") as Role) ||
+      (request.headers.get("user-role") as Role) ||
       (url.searchParams.get("executorRole") as Role) ||
       Role.MEMBER;
 
