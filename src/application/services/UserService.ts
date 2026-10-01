@@ -107,6 +107,7 @@ export class UserService {
         executorId: executorId,
         targetUserId: targetUserId,
         oldInfo: user,
+        newInfo: newUser,
       };
       eventBus.emit(ACTIVITY_EVENTS.COMMENT_UPDATED, payload);
       return newUser;
@@ -117,5 +118,8 @@ export class UserService {
 
   async getUsersByRole(role: Role): Promise<User[]> {
     return this.userRepository.findByRole(role);
+  }
+  async getUsersById(id: string): Promise<User | null> {
+    return this.userRepository.findById(id);
   }
 }

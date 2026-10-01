@@ -4,7 +4,12 @@ import { User, Role } from "@prisma/client";
 
 export class UserRepository implements IUserRepository {
   async findById(id: string): Promise<User | null> {
-    return prisma.user.findUnique({ where: { id } });
+    return prisma.user.findUnique({ where: { id },
+      include: {
+        projects:true,
+        createdTasks:true,
+        tasksAssignee:true,
+      }, });
   }
 
   async findByEmail(email: string): Promise<User | null> {

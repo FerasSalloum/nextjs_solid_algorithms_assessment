@@ -2,11 +2,12 @@
 
 import { TaskWithAssigneeProjectOwner } from "@/src/types/TaskRepository";
 import { Button } from "../ui/Button";
+import { Task } from "@prisma/client";
 
 interface TaskCardProps {
-  task: TaskWithAssigneeProjectOwner;
+  task: TaskWithAssigneeProjectOwner | Task;
   projectId: string;
-  onTaskUpdated: () => void;
+  onTaskUpdated?: () => void;
   onViewProject?: (taskId: string) => void;
 }
 
@@ -93,7 +94,9 @@ export function TaskCard({ task, onViewProject }: TaskCardProps) {
       <div className="border-t border-gray-50 pt-3 space-y-2 text-xs">
         <div className="flex items-center justify-between text-gray-500">
           <span className="font-semibold text-gray-700">
-            المنشئ: {task.owner?.name || "مستخدم مجهول"}
+            {"owner" in task
+              ? (task.owner?.name ?? "المنشئ: مستخدم مجهول")
+              : ""}
           </span>
           {task.dueDate && (
             <span className="flex items-center gap-1 text-gray-600 bg-gray-50 px-2 py-0.5 rounded-md dir-ltr font-mono">
@@ -103,15 +106,15 @@ export function TaskCard({ task, onViewProject }: TaskCardProps) {
         </div>
 
         <div className="flex items-center justify-start gap-1 flex-wrap">
-          <span className="text-gray-400 font-medium">المسند إليهم:</span>
+          <span className="text-gray-400 font-medium">
+            {"assignee" in task ? (task.assignee?.name ?? "مستخدم مجهول") : ""}
+          </span>
           <span className="bg-gray-100 text-gray-700 font-semibold px-2 py-0.5 rounded-md text-[11px]">
-            {task.assignee?.name || "مستخدم مجهول"}
+            {"assignee" in task ? (task.assignee?.name ?? "المسند إليهم:") : ""}
           </span>
         </div>
       </div>
-      <Button onClick={() => onViewProject?.(task.id)}>
-        استعراض المهمة &larr;
-      </Button>
+      <Button onClick={() => onViewProject?.(task.id)}>استعراض المهمة</Button>
     </div>
   );
 }

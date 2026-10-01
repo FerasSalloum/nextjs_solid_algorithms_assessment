@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 import { SessionProvider } from "next-auth/react";
 import { Header } from "../components/ui/Header";
 import { Footer } from "../components/ui/Footer";
+import ReactQueryProvider from "../providers/ReactQueryProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,8 +19,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "مدير المشاريع", 
-    template: "%s | مدير المشاريع", 
+    default: "مدير المشاريع",
+    template: "%s | مدير المشاريع",
   },
   description: "المنصة الموحدة لإدارة المشاريع والمهام المؤسسية",
 };
@@ -35,17 +36,14 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <SessionProvider>
-          <Header />
-        {children}
-        <Toaster 
-          position="top-right" 
-          richColors 
-          closeButton 
-          dir="rtl"
-        />
-        <Footer/>
-        </SessionProvider>  
+        <ReactQueryProvider>
+          <SessionProvider>
+            <Header />
+            {children}
+            <Toaster position="top-right" richColors closeButton dir="rtl" />
+            <Footer />
+          </SessionProvider>
+        </ReactQueryProvider>
       </body>
     </html>
   );

@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { UserService } from "@/src/application/services/UserService";
 import { UserRepository } from "@/src/infrastructure/repositories/UserRepository";
 import { BcryptHashService } from "@/src/infrastructure/security/BcryptHashService";
@@ -7,7 +7,7 @@ import { Role } from "@prisma/client";
 
 type RouteParams = {
   params: Promise<{
-    id: string; // targetUserId
+    id: string;
   }>;
 };
 
@@ -18,13 +18,13 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     const url = new URL(request.url);
     const executorId =
-      request.headers.get("x-user-id") ||
+      request.headers.get("user-id") ||
       body.executorId ||
       url.searchParams.get("executorId") ||
       "";
 
     const executorRole =
-      (request.headers.get("x-user-role") as Role) ||
+      (request.headers.get("user-role") as Role) ||
       (body.executorRole as Role) ||
       (url.searchParams.get("executorRole") as Role) ||
       Role.MEMBER;
@@ -34,7 +34,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     const userService = new UserService(userRepository, hashService);
 
     // 1. التحقق من وجود المستخدم المستهدف وتحديد دوره الحالي
-    const targetUser = await userRepository.findById(targetUserId);
+    const targetUser = await userService.getUsersById(targetUserId);
     if (!targetUser) {
       throw new NotFoundError("المستخدم غير موجود");
     }
@@ -60,6 +60,39 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     );
   } catch (error: unknown) {
     console.error("PATCH /api/users/[id] Error:", error);
+
+    if (error instanceof AppError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.statusCode },
+      );
+    }
+
+    return NextResponse.json(
+      { error: "حدث خطأ في الخادم أثناء معالجة الطلب" },
+      { status: 500 },
+    );
+  }
+}
+export async function GET(request: NextRequest, { params }: RouteParams) {
+  try {
+    const { id: targetUserId } = await params;
+
+    const userRepository = new UserRepository();
+    const hashService = new BcryptHashService();
+    const userService = new UserService(userRepository, hashService);
+
+    const user = await userService.getUsersById(targetUserId);
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: user,
+      },
+      { status: 200 },
+    );
+  } catch (error: unknown) {
+    console.error(`GET /api/users/[id] Error:`, error);
 
     if (error instanceof AppError) {
       return NextResponse.json(

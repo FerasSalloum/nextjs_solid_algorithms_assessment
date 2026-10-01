@@ -1,4 +1,4 @@
-import { Project, Task, TaskComment, User  } from "@prisma/client";
+import { Project, Task, TaskComment, User } from "@prisma/client";
 
 export const ACTIVITY_EVENTS = {
   PROJECT_CREATED: "PROJECT_CREATED",
@@ -62,7 +62,7 @@ export interface TaskDeletedPayload {
 }
 
 export interface CommentCreatedPayload {
-  userId: string; 
+  userId: string;
   taskId: string;
   commentId: string;
 }
@@ -85,4 +85,5 @@ export interface UserUpdatedPayload {
   executorId: string;
   targetUserId: string;
   oldInfo?: Partial<User>;
+  newInfo?: Partial<User>;
 }
