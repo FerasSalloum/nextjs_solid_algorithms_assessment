@@ -1,4 +1,7 @@
-import { ActivityLogWithUser, ActivityLogWithUserProjectTask } from "@/src/types/ActivityLog";
+import {
+  ActivityLogWithUser,
+  ActivityLogWithUserProjectTask,
+} from "@/src/types/ActivityLog";
 import { ActivityMetadata } from "@/src/types/ActivityMetadata";
 import { ActivityLog } from "@prisma/client";
 
@@ -8,6 +11,8 @@ export interface IActivityLogFilterOptions {
   taskId?: string;
   action?: string;
   limit?: number;
+  page?: number;
+  search?: string;
 }
 
 export interface IActivityLogRepository {
@@ -16,7 +21,7 @@ export interface IActivityLogRepository {
     action: string;
     projectId?: string;
     taskId?: string;
-    metadata?: ActivityMetadata
+    metadata?: ActivityMetadata;
   }): Promise<ActivityLog>;
 
   findAll(filters?: IActivityLogFilterOptions): Promise<ActivityLogWithUser[]>;

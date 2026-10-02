@@ -26,7 +26,7 @@ export class ActivityLogQueueProcessor {
   /**
    * تشغيل المعالج الدائري لسحب البيانات وتفريغ الطابور في قاعدة البيانات
    */
-  public startWorker(intervalMs: number = 2000, batchSize: number = 20): void {
+  public startWorker(intervalMs: number = 2000, batchSize: number = 1): void {
     if (this.intervalId) return;
 
     this.intervalId = setInterval(async () => {

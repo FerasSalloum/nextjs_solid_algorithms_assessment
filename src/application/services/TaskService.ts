@@ -58,12 +58,13 @@ export class TaskService {
         taskId: newTask.id,
         projectId: newTask.projectId,
       };
+      console.log("📢 تم إطلاق الحدث:", ACTIVITY_EVENTS.TASK_CREATED);
       eventBus.emit(ACTIVITY_EVENTS.TASK_CREATED, payload);
       return newTask;
     }
 
     throw new ForbiddenError("صلاحيات غير كافية: لا يمكنك إنشاء المهام");
-  } 
+  }
 
   async updateTask(
     executorId: string,

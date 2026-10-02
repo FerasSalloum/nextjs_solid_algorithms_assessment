@@ -32,18 +32,23 @@ export class ActivityLogRepository implements IActivityLogRepository {
   async findAll(
     filters?: IActivityLogFilterOptions,
   ): Promise<ActivityLogWithUser[]> {
-    return prisma.activityLog.findMany({
+    const page = filters?.page || 1;
+    const limit = filters?.limit || 10;
+    const skip = (page - 1) * limit;
+
+    return await prisma.activityLog.findMany({
       where: {
-        ...(filters?.userId && { userId: filters.userId }),
-        ...(filters?.projectId && { projectId: filters.projectId }),
-        ...(filters?.taskId && { taskId: filters.taskId }),
         ...(filters?.action && { action: filters.action }),
+        // أضف أي شروط بحث إضافية هنا
       },
-      take: filters?.limit, // تحديد عدد النتائج المسترجعة
-      orderBy: { createdAt: "desc" }, // عرض الأحداث الأحدث أولاً
       include: {
-        user: { select: { id: true, name: true, email: true } }, // جلب معلومات مبسطة عن منفذ العملية
+        user: true,
+        project: true,
+        task: true,
       },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
     });
   }
 
