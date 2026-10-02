@@ -71,7 +71,7 @@ export default function UserProfilePage() {
       <main className="max-w-3xl mx-auto space-y-5">
         {/* ================= 1. بطاقة معلومات المستخدم والإحصائيات ================= */}
         <section className="bg-white rounded-2xl p-6 shadow-xs border border-gray-100/80">
-          <div className="text-center sm:text-right mb-6 p-440">
+          <div className="text-center sm:text-right mb-6 p-4">
             <h1 className="text-xl sm:text-2xl font-black text-gray-900 mb-1.5">
               {profile.name || "NAME"}
             </h1>
